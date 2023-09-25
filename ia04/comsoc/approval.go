@@ -1,9 +1,41 @@
 package comsoc
 
-// test comment
+import (
+	"errors"
+)
+
 func ApprovalSWF(p Profile, thresholds []int) (count Count, err error) {
-	return nil, nil
+	err = CheckProfile(p) // à voir quelle(s) vérifications on doit faire
+	if err != nil {
+		return nil, err
+	}
+
+	if len(thresholds) != len(p) {
+		return nil, errors.New("The number of thresholds doesn't match the profile.")
+	}
+
+	count = make(map[Alternative]int)
+	for index_profile, pref := range p {
+		if thresholds[index_profile] > len(pref) {
+			return nil,errors.New("The thresholds exceeds the preference length.")
+		}
+		for _, key := range pref[:thresholds[index_profile]] {
+			// On itère uniquement entre l'indice 0 et le seuil associé (indice exclu)
+			_, exist := count[key]
+			if exist {
+				count[key]++
+			} else {
+				count[key] = 1
+			}
+		}
+	}
+	return count, nil
 }
 func ApprovalSCF(p Profile, thresholds []int) (bestAlts []Alternative, err error) {
-	return nil, nil
+	var count Count
+	count, err = ApprovalSWF(p, thresholds)
+	if err != nil {
+		return nil, err
+	}
+	return maxCount(count), err
 }

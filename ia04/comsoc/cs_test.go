@@ -23,7 +23,7 @@ func TestBordaSWF(t *testing.T) {
 		t.Errorf("error, result for 3 should be 2, %d computed", res[3])
 	}
 }
-/*
+
 func TestBordaSCF(t *testing.T) {
 	prefs := [][]Alternative{
 		{1, 2, 3},
@@ -118,7 +118,7 @@ func TestApprovalSCF(t *testing.T) {
 		t.Errorf("error, 1 should be the only best Alternative")
 	}
 }
-
+/*
 func TestCondorcetWinner(t *testing.T) {
 	prefs1 := [][]Alternative{
 		{1, 2, 3},
