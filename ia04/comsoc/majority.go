@@ -1,5 +1,8 @@
 package comsoc
 
+/*
+renvoie à partir d'un profile , le nombre de vote en faveur de chaque alternative
+*/
 func MajoritySWF(p Profile) (count Count, err error) {
 	err = CheckProfile(p) // à voir si on utilise CheckProfileAlternative()
 	if err != nil {
@@ -18,12 +21,14 @@ func MajoritySWF(p Profile) (count Count, err error) {
 	return count, nil
 }
 
+/*
+renvoie à partir d'un profile, les alternantives qui ont un nombre de vote maximal
+*/
 func MajoritySCF(p Profile) (bestAlts []Alternative, err error) {
 	var count Count
 	count, err = MajoritySWF(p)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	return maxCount(count),err
+	return maxCount(count), err
 }
-

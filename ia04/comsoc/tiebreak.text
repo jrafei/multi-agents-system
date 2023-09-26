@@ -1,0 +1,50 @@
+/*
+package comsoc
+
+import (
+	"errors"
+)
+
+
+renvoie à partir d'une liste ordonnée des alternatives, une fonction qui renvoie le gagnant d'une autre liste d'alternative (pas forcément ordonné)
+
+func TieBreakFactory(orderedAlts []Alternative) (func ([]Alternative) (Alternative, error)){
+	tiebrake := func(alts []Alternative) (a Alternative, err error) {
+		if len(alts)==0 {
+			return alts[0],errors.New("No alternative to order.")
+		}
+
+		if len(orderedAlts)==0 {
+			return alts[0],errors.New("Unable to order alternatives.")
+		}
+
+		if len(alts)==1{
+			return alts[0],nil
+		}
+
+		winning_alt:= alts[0]
+		for pos := range alts{
+			if rank(alts[pos],orderedAlts) < rank(winning_alt,orderedAlts){
+				winning_alt = alts[pos]
+			}
+		}
+		return winning_alt,nil
+	}
+	return tiebrake
+}
+
+func SWFFactory(swf func(p Profile) (Count, error), fct func([]Alternative) (Alternative, err error))  (func(Profile) ([]Alternative, error)){
+	swfactory := func (pr Profile) (alts []Alternative,err error) {
+		count,err := swf(pr)
+		if err != nil {
+			return nil,errors.New("")
+		}
+		alts = make([]Alternative, len(count))
+
+
+	}
+	return nil
+}
+
+//func SCFFactory(func scf(p Profile) ([]Alternative, error), func ([]Alternative) (Alternative, err error)) (func(Profile) (Alternative, err error))
+*/
