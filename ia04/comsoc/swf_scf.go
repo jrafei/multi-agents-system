@@ -1,8 +1,10 @@
 package comsoc
 
 // Elimination d'un élément, à partir de son index, dans une slice
-func remove(slice []Alternative, s int) []Alternative {
-	return append(slice[:s], slice[s+1:]...)
+func remove(s []Alternative, index int) []Alternative {
+	ret := make([]Alternative, 0)
+    ret = append(ret, s[:index]...)
+    return append(ret, s[index+1:]...)
 }
 
 func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Alternative, error)) func(Profile) ([]Alternative, error) {
