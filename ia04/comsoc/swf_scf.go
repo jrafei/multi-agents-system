@@ -28,7 +28,7 @@ func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Al
 			alts = remove(alts, index)
 			sorted_alts = append(sorted_alts, alt)
 		}
-		return alts, nil
+		return sorted_alts, nil
 	}
 	return f_swf
 }
@@ -39,12 +39,12 @@ func SCFFactory(scf func(p Profile) ([]Alternative, error), tieb func([]Alternat
 		alts, err := scf(p)
 		// Récupération du décompte
 		if err != nil {
-			return alts[0], err
+			return 0, err
 		}
 		alt, err := tieb(alts)
 		// Application du tiebreak sur les objets ayant le plus de voix
 		if err != nil {
-			return alts[0], err
+			return 0, err
 		}
 		return alt, nil
 	}
