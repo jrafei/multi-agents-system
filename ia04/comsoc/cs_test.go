@@ -118,7 +118,8 @@ func TestApprovalSCF(t *testing.T) {
 		t.Errorf("error, 1 should be the only best Alternative")
 	}
 }
-/*
+
+
 func TestCondorcetWinner(t *testing.T) {
 	prefs1 := [][]Alternative{
 		{1, 2, 3},
@@ -142,4 +143,3 @@ func TestCondorcetWinner(t *testing.T) {
 		t.Errorf("no best alternative for prefs2")
 	}
 }
-*/

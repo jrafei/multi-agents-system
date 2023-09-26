@@ -54,15 +54,15 @@ func CheckProfile(prefs Profile) error {
 	if len(prefs) > 0 {
 		length = len(prefs[0])
 	} else {
-		return errors.New("No preference in profile.\n")
+		return errors.New("no preference in profile")
 	}
 	for _, pref := range prefs {
 		// Vérification que chaque préférence à le même nombre d'alternatives
 		if len(pref) != length {
-			return errors.New("Not the same number of alternatives between preferences.")
+			return errors.New("not the same number of alternatives between preferences")
 		}
 		if checkAlternative(pref) != nil {
-			return errors.New("Alternative appears more than once in a preference.")
+			return errors.New("alternative appears more than once in a preference")
 		}
 	}
 	return nil
@@ -73,11 +73,11 @@ func CheckProfile(prefs Profile) error {
 func checkAlternative(pref []Alternative) error {
 	check := make(map[Alternative]int) // nombre d'occurence des alternatives dans la préférence
 	for _, v := range pref {
-		_,present := check[v]
+		_, present := check[v]
 		if present {
-			return errors.New("Alternative appears more than once.")
-		}else{
-			check[v]=1
+			return errors.New("alternative appears more than once")
+		} else {
+			check[v] = 1
 		}
 	}
 	return nil
@@ -88,17 +88,17 @@ func CheckProfileAlternative(prefs Profile, alts []Alternative) error {
 	if len(prefs) > 0 {
 		length = len(prefs[0])
 	} else {
-		return errors.New("No preference in profile.\n")
+		return errors.New("no preference in profile")
 	}
 	for _, pref := range prefs {
 		// Vérification que chaque préférence à le même nombre d'alternatives
 		if len(pref) != length {
-			return errors.New("Not the same number of alternatives between preferences.")
+			return errors.New("not the same number of alternatives between preferences")
 		}
 		// Verification que chaque alternative n'apparait pas plusieur fois
 		test := checkAlternative(pref)
 		if test != nil {
-			return errors.New("Alternantive appears more than one")
+			return errors.New("alternantive appears more than one")
 		}
 
 		//Verification que toutes les alternatives apparaissent dans la préference
@@ -110,8 +110,8 @@ func CheckProfileAlternative(prefs Profile, alts []Alternative) error {
 					break
 				}
 			}
-			if present == false {
-				return errors.New("Une alternative n'apparait pas dans la préférence")
+			if !present {
+				return errors.New("une alternative n'apparait pas dans la préférence")
 			}
 		}
 	}
