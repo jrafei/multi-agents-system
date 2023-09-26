@@ -1,6 +1,11 @@
 package comsoc
 
-func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Alternative,error)) func(Profile) ([]Alternative, error) {
+// Elimination d'un élément, à partir de son index, dans une slice
+func remove(slice []Alternative, s int) []Alternative {
+	return append(slice[:s], slice[s+1:]...)
+}
+
+func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Alternative, error)) func(Profile) ([]Alternative, error) {
 	f_swf := func(p Profile) ([]Alternative, error) {
 		// Construction de la fonction avec application tiebreak
 		count, err := swf(p)
@@ -8,36 +13,38 @@ func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Al
 		if err != nil {
 			return nil, err
 		}
-		alt, err := tieb(maxCount(count))
-		// Application du tiebreak sur les objets ayant le plus de voix
-		if err != nil {
-			return nil, err
+		alts := maxCount(count)
+		// Récupération des meilleurs alternatives
+		sorted_alts := make([]Alternative, 0)
+		for len(alts) > 0 {
+			// Tri des alternatives en fonction du tiebreak
+			alt, err := tieb(alts)
+			if err != nil {
+				return nil, err
+			}
+			index := rank(alt, alts)
+			alts = remove(alts, index)
+			sorted_alts = append(sorted_alts, alt)
 		}
-		winning_alt := make([]Alternative,1)
-		winning_alt[0] = alt
-		// On construit une slice avec la solution
-		return winning_alt, nil
+		return alts, nil
 	}
 	return f_swf
 }
 
-func SCFFactory(scf func(p Profile) ([]Alternative, error), tieb func([]Alternative) (Alternative, error)) func(Profile) ([]Alternative, error) {
-	f_scf := func(p Profile) ([]Alternative, error) {
+func SCFFactory(scf func(p Profile) ([]Alternative, error), tieb func([]Alternative) (Alternative, error)) func(Profile) (Alternative, error) {
+	f_scf := func(p Profile) (Alternative, error) {
 		// Construction de la fonction avec application tiebreak
 		alts, err := scf(p)
 		// Récupération du décompte
 		if err != nil {
-			return nil, err
+			return alts[0], err
 		}
 		alt, err := tieb(alts)
 		// Application du tiebreak sur les objets ayant le plus de voix
 		if err != nil {
-			return nil, err
+			return alts[0], err
 		}
-		winning_alt := make([]Alternative,1)
-		winning_alt[0] = alt
-		// On construit une slice avec la solution
-		return winning_alt, nil
+		return alt, nil
 	}
 	return f_scf
 }
