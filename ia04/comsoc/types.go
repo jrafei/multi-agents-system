@@ -10,6 +10,20 @@ type Alternative int
 type Profile [][]Alternative
 type Count map[Alternative]int
 
+/********* TYPES AJOUTES *****************/
+
+type AltTuple struct {
+	a Alternative
+	b Alternative
+}
+
+func (t *AltTuple) First() Alternative{
+	return t.a
+}
+func (t *AltTuple) Second() Alternative{
+	return t.b
+}
+
 /*---------- FONCTIONS UTILITAIRES ------------*/
 
 // renvoie l'indice ou se trouve alt dans prefs
