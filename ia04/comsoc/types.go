@@ -25,6 +25,31 @@ func (t *AltTuple) Second() Alternative {
 	return t.second
 }
 
+func CountIsPref(p Profile) map[AltTuple]int {
+	// Compte le nombre de fois que les alternatives du profil battent les autre alternatives
+	// La fonction retourne un dictionnaire dont les clés sont des tuples (a,b) (" a bat b "), et les valeurs le nombre de fois que cela arrive.
+	win := make(map[AltTuple]int) // enregistre le nombre de fois où a bat b
+	for _, pref := range p {
+		for index, alt := range pref {
+			if alt == pref[len(pref)-1] {
+				// On stop si on arrive à la dernière valeur (inutile de l'étudier)
+				break
+			} else {
+				for _, alt2 := range pref[index+1:] {
+					tuple := AltTuple{alt, alt2}
+					_, exist := win[tuple]
+					if exist {
+						win[tuple]++
+					} else {
+						win[tuple] = 1
+					}
+				}
+			}
+		}
+	}
+	return win
+}
+
 /*---------- FONCTIONS UTILITAIRES ------------*/
 
 // renvoie l'indice ou se trouve alt dans prefs
