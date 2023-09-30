@@ -77,6 +77,21 @@ func main() {
 		fmt.Println(res)
 	*/
 	/*
+
+	prefs := [][]comsoc.Alternative{
+		{1, 3, 2},
+		{1, 2, 3},
+		{2, 3, 1},
+		{2, 1, 3},
+		{3, 1, 2},
+		{3, 1, 2},
+	}
+	//thresholds := []int{2, 1, 2, 3}
+
+	res, err := comsoc.SWFFactory(comsoc.BordaSWF, comsoc.TieBreakFactory([]comsoc.Alternative{3, 2, 1, 4}))(prefs)
+	
+	fmt.Println(res)
+
 		prefs := [][]comsoc.Alternative{
 			{1, 3, 2},
 			{1, 2, 3},
@@ -115,4 +130,5 @@ func main() {
 
 		fmt.Println(comsoc.CopelandSWF(p))
 	*/
+
 }
