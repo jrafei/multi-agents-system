@@ -88,7 +88,7 @@ func maxCount(count Count) (bestAlts []Alternative) {
 }
 
 // vérifie le profil donné, par ex. qu'ils sont tous complets et que chaque alternative n'apparaît qu'une seule fois par préférences
-// à vérifier
+// ********************************************************* A modifier ************************************
 func CheckProfile(prefs Profile) error {
 	length := 0
 	if len(prefs) > 0 {
@@ -109,7 +109,6 @@ func CheckProfile(prefs Profile) error {
 }
 
 // Vérifie que chaque alternative n'apparaît qu'une seule fois par préférence
-// à vérifier
 func checkAlternative(pref []Alternative) error {
 	check := make(map[Alternative]int) // nombre d'occurence des alternatives dans la préférence
 	for _, v := range pref {
