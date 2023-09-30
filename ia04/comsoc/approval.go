@@ -5,7 +5,10 @@ import (
 )
 
 func ApprovalSWF(p Profile, thresholds []int) (count Count, err error) {
-	err = CheckProfile(p) // à voir quelle(s) vérifications on doit faire
+	if len(p) == 0 {
+		return nil, errors.New("profil is empty")
+	}
+	err = CheckProfileAlternative(p, p[0]) // à voir quelle(s) vérifications on doit faire
 	if err != nil {
 		return nil, err
 	}

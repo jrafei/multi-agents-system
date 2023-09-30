@@ -1,5 +1,6 @@
 package comsoc
 
+/*
 func STV_SWF(p Profile) (count Count, err error) {
 
 	alts := make([]Alternative, 0)
@@ -49,3 +50,4 @@ func absoluteMajority(p Profile, count Count) bool {
 }
 
 // func STV_SCF(p Profile) (bestAlts []Alternative, err error) {}
+*/

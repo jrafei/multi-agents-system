@@ -1,6 +1,6 @@
 package comsoc
 
-
+/*
 func CopelandSWF(p Profile) (count Count, err error) {
 	err = CheckProfile(p) // à voir si on utilise CheckProfileAlternative()
 	if err != nil {
@@ -78,3 +78,4 @@ func CopelandSCF(p Profile) (bestAlts []Alternative, err error) {
 	}
 	return maxCount(count), err
 }
+*/
