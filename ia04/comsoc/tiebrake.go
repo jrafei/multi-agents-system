@@ -1,5 +1,6 @@
 package comsoc
 
+
 import (
 	"errors"
 )
@@ -7,11 +8,11 @@ import (
 func TieBreakFactory(orderedAlts []Alternative) (func ([]Alternative) (Alternative, error)){
 	tiebrake := func(alts []Alternative) (a Alternative, err error) {
 		if len(alts)==0 {
-			return alts[0],errors.New("No alternative to order.")
+			return -1,errors.New("no alternative to order")
 		}
 
 		if len(orderedAlts)==0 {
-			return alts[0],errors.New("Unable to order alternatives.")
+			return alts[0],errors.New("unable to order alternatives")
 		}
 
 		if len(alts)==1{
@@ -28,3 +29,4 @@ func TieBreakFactory(orderedAlts []Alternative) (func ([]Alternative) (Alternati
 	}
 	return tiebrake
 }
+

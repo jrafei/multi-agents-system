@@ -1,10 +1,14 @@
 package comsoc
 
-/*
-Calcule le score de chaque alternative par la méthode de borda
-*/
+import "errors"
+
+//Calcule le score de chaque alternative par la méthode de borda
+
 func BordaSWF(p Profile) (count Count, err error) {
-	err = CheckProfile(p) // à voir si on utilise CheckProfileAlternative()
+	if len(p) == 0 {
+		return nil, errors.New("profil is empty")
+	}
+	err = CheckProfileAlternative(p, p[0]) // à voir si on utilise CheckProfileAlternative()
 	if err != nil {
 		return nil, err
 	}
@@ -22,9 +26,7 @@ func BordaSWF(p Profile) (count Count, err error) {
 	return count, nil
 }
 
-/*
-renvoie les alternatives qui ont un score Borda maximal
-*/
+//renvoie les alternatives qui ont un score Borda maximal
 func BordaSCF(p Profile) (bestAlts []Alternative, err error) {
 	var count Count
 	count, err = BordaSWF(p)

@@ -1,9 +1,8 @@
 package comsoc
-/*
+
 import (
 	"errors"
 )
-
 
 func CondorcetWinner(p Profile) (bestAlts []Alternative, err error) {
 	if len(p) == 0 {
@@ -15,44 +14,38 @@ func CondorcetWinner(p Profile) (bestAlts []Alternative, err error) {
 		return nil, errors.New("preference is empty")
 	}
 
-	list := combin.Combinations(N, 2)
-
-	count := make(map[Alternative]int)
-	for _, comb := range list {
-		a := Alternative(comb[0] + 1) //à revoir, je considère que les alternatives sont de 1 à N
-		b := Alternative(comb[1] + 1)
-		cpta := 0
-		cptb := 0
-		for _, pref := range p {
-			if isPref(a, b, pref) {
-				cpta++
-			} else {
-				cptb++
-			}
-		}
-		if cpta > cptb { //incrémenter la valeur d'alt a dans le map count s'il existe
-			_, exist := count[a]
-			if exist {
-				count[a]++
-			} else {
-				count[a] = 1
-			}
-		}
-
-		if cpta < cptb { //incrémenter la valeur d'alt a dans le map count s'il existe
-			_, exist := count[a]
-			if exist {
-				count[b]++
-			} else {
-				count[b] = 1
-			}
-		}
+	err = CheckProfileAlternative(p, p[0])
+	if err != nil {
+		return nil, err
 	}
 
-	bestAlts = maxCount(count)
+	list := p[0]
+	for _, alt1 := range list {
+		battre := true
+		for _, alt2 := range list {
+			if alt1 != alt2 {
+				count1 := 0
+				count2 := 0
+				for _, prefs := range p {
+					if isPref(alt1, alt2, prefs) {
+						count1++
+					} else {
+						count2++
+					}
+				}
+				if count1 < count2 {
+					battre = false
+					break
+				}
+			}
+		}
+		if battre {
+			bestAlts = append(bestAlts, alt1)
+		}
+	}
 	if len(bestAlts) > 1 {
-		return nil, errors.New("best alternative doesn't exist")
+		return nil, errors.New("winner does not exist")
 	}
+
 	return bestAlts, nil
 }
-*/

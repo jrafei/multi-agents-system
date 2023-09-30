@@ -1,25 +1,22 @@
 package main
 
 func main() {
-
 	/*
-		// Test
-		tab := make([]comsoc.Alternative, 10)
-		for i, _ := range tab {
-			tab[i] = comsoc.Alternative(i + 1)
-		}
-		fmt.Println(tab)
-		fmt.Print(comsoc.Rank(comsoc.Alternative(10), tab))
-		mp := make(map[comsoc.Alternative]int)
-		for _,k := range tab {
-			mp[k] = rand.Intn(10)
-		}
+			// Test
+			tab := make([]comsoc.Alternative, 10)
+			for i, _ := range tab {
+				tab[i] = comsoc.Alternative(i + 1)
+			}
+			fmt.Println(tab)
+			fmt.Print(comsoc.Rank(comsoc.Alternative(5), tab))
+			mp := make(map[comsoc.Alternative]int)
+			for _, k := range tab {
+				mp[k] = rand.Intn(10)
+			}
 
-		fmt.Println(mp)
-		fmt.Println(comsoc.MaxCount(mp))
-	*/
+			fmt.Println(mp)
+			fmt.Println(comsoc.MaxCount(mp))
 
-	/*
 		// TEST CHECK PROFILE
 		pref1 := make([]comsoc.Alternative, 11)
 		pref2 := make([]comsoc.Alternative, 11)
@@ -44,9 +41,9 @@ func main() {
 
 		}
 		for i, _ := range pref4 {
-			pref4[i] = comsoc.Alternative(11-i)
-
+			pref4[i] = comsoc.Alternative(11 - i)
 		}
+		//pref4[0] = 10
 
 		profile := make([][]comsoc.Alternative, 4)
 		profile[0] = pref1
@@ -54,28 +51,30 @@ func main() {
 		profile[2] = pref3
 		profile[3] = pref4
 
+		fmt.Println(alts)
 		fmt.Println(pref1)
 		fmt.Println(pref2)
 		fmt.Println(pref3)
 		fmt.Println(pref4)
-		fmt.Println(comsoc.CheckProfile(profile))
+
+		fmt.Println(comsoc.CheckProfileAlternative(profile, alts))
+
 		fmt.Println(comsoc.MajoritySWF(profile))
 		fmt.Println(comsoc.MajoritySCF(profile))
 		fmt.Println(comsoc.BordaSCF(profile))
-	*/
 
-	/*
-		// TEST BORDA
-			prefs := [][]comsoc.Alternative{
-				{1, 2, 3},
-				{1, 2, 3},
-				{3, 2, 1},
-				{2, 3, 1},
-			}
 
-			res, _ := comsoc.BordaSCF(prefs)
+			// TEST BORDA
+				prefs := [][]comsoc.Alternative{
+					{1, 2, 3},
+					{1, 2, 3},
+					{3, 2, 1},
+					{2, 3, 1},
+				}
 
-			fmt.Println(res)
+				res, _ := comsoc.BordaSCF(prefs)
+
+				fmt.Println(res)
 	*/
 
 	/*

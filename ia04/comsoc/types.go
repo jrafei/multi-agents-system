@@ -2,6 +2,7 @@ package comsoc
 
 import (
 	"errors"
+	"fmt"
 )
 
 /*--------------- TYPES DE BASE ---------------*/
@@ -58,6 +59,7 @@ func rank(alt Alternative, prefs []Alternative) int {
 	for index, val := range prefs {
 		if val == alt {
 			i = index
+			break
 		}
 	}
 	return i
@@ -87,23 +89,28 @@ func maxCount(count Count) (bestAlts []Alternative) {
 	return bestAlts
 }
 
-// vérifie le profil donné, par ex. qu'ils sont tous complets et que chaque alternative n'apparaît qu'une seule fois par préférences
+// vérifie les préférences d'un agent, par ex. qu'ils sont tous complets et que chaque alternative n'apparaît qu'une seule fois
 // ********************************************************* A modifier ************************************
-func CheckProfile(prefs Profile) error {
-	length := 0
-	if len(prefs) > 0 {
-		length = len(prefs[0])
-	} else {
-		return errors.New("no preference in profile")
+func CheckProfile(prefs []Alternative, alts []Alternative) error {
+	if len(prefs) == 0 {
+		return errors.New("the list of preference is empty")
 	}
-	for _, pref := range prefs {
-		// Vérification que chaque préférence à le même nombre d'alternatives
-		if len(pref) != length {
-			return errors.New("not the same number of alternatives between preferences")
+
+	// Verification que chaque alternative de la liste 'alts' apparait une seule fois dans les préférences
+	for _, alt1 := range alts {
+		cpt := 0
+		for _, alt2 := range prefs {
+			if alt1 == alt2 {
+				cpt++
+			}
+			if cpt > 1 {
+				return errors.New(fmt.Sprintf("alternative %d appears more than once", alt1))
+			}
 		}
-		if checkAlternative(pref) != nil {
-			return errors.New("alternative appears more than once in a preference")
+		if cpt == 0 {
+			return errors.New(fmt.Sprintf("alternative %d does not appear", alt1))
 		}
+
 	}
 	return nil
 }
@@ -122,36 +129,11 @@ func checkAlternative(pref []Alternative) error {
 	return nil
 }
 
+// vérifie le profil donné, par ex. qu'ils sont tous complets et que chaque alternative de alts apparaît exactement une fois par préférences
 func CheckProfileAlternative(prefs Profile, alts []Alternative) error {
-	length := 0
-	if len(prefs) > 0 {
-		length = len(prefs[0])
-	} else {
-		return errors.New("no preference in profile")
-	}
 	for _, pref := range prefs {
-		// Vérification que chaque préférence à le même nombre d'alternatives
-		if len(pref) != length {
-			return errors.New("not the same number of alternatives between preferences")
-		}
-		// Verification que chaque alternative n'apparait pas plusieur fois
-		test := checkAlternative(pref)
-		if test != nil {
-			return errors.New("alternantive appears more than one")
-		}
-
-		//Verification que toutes les alternatives apparaissent dans la préference
-		for _, alt1 := range alts {
-			present := false
-			for _, alt2 := range pref {
-				if alt1 == alt2 {
-					present = true
-					break
-				}
-			}
-			if !present {
-				return errors.New("une alternative n'apparait pas dans la préférence")
-			}
+		if CheckProfile(pref, alts) != nil {
+			return errors.New("profil is not valid")
 		}
 	}
 	return nil
