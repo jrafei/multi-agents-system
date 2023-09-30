@@ -1,10 +1,9 @@
 package comsoc
-
+/*
 import (
 	"errors"
-
-	"gonum.org/v1/gonum/stat/combin"
 )
+
 
 func CondorcetWinner(p Profile) (bestAlts []Alternative, err error) {
 	if len(p) == 0 {
@@ -56,3 +55,4 @@ func CondorcetWinner(p Profile) (bestAlts []Alternative, err error) {
 	}
 	return bestAlts, nil
 }
+*/

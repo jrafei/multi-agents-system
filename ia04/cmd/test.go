@@ -65,67 +65,38 @@ func main() {
 	*/
 
 	/*
-		prefs := [][]comsoc.Alternative{
-			{1, 2, 3},
-			{1, 2, 3},
-			{3, 2, 1},
-			{2, 3, 1},
-		}
+		// TEST BORDA
+			prefs := [][]comsoc.Alternative{
+				{1, 2, 3},
+				{1, 2, 3},
+				{3, 2, 1},
+				{2, 3, 1},
+			}
 
-		res, _ := comsoc.BordaSCF(prefs)
+			res, _ := comsoc.BordaSCF(prefs)
 
-		fmt.Println(res)
+			fmt.Println(res)
 	*/
+
 	/*
+		// TEST SWF
 
 		prefs := [][]comsoc.Alternative{
 			{1, 3, 2},
 			{1, 2, 3},
 			{2, 3, 1},
-			{4, 1, 2},
+			{2, 1, 3},
+			{3, 1, 2},
+			{3, 1, 2},
 		}
-		thresholds := []int{2, 1, 2, 3}
+		//thresholds := []int{2, 1, 2, 3}
 
-		res, err := comsoc.ApprovalSCF(prefs, thresholds)
-
-		if err != nil {
-			fmt.Println(err)
-		}
-		if len(res) != 1 || res[0] != 1 {
-			fmt.Println("error, 1 should be the only best Alternative")
-		}
+		res, err := comsoc.SWFFactory(comsoc.BordaSWF, comsoc.TieBreakFactory([]comsoc.Alternative{3, 2, 1, 4}))(prefs)
 
 		fmt.Println(res)
 	*/
-  /*
-	p := [][]comsoc.Alternative{
-		{1, 3, 2},
-		{1, 2, 3},
-		{2, 3, 1},
-		{3, 1, 2},
-	}
-
-	res, _ := comsoc.STV_SWF(p)
-
-	fmt.Println(res)
-  */
-  /*
-
-	prefs := [][]comsoc.Alternative{
-		{1, 3, 2},
-		{1, 2, 3},
-		{2, 3, 1},
-		{2, 1, 3},
-		{3, 1, 2},
-		{3, 1, 2},
-	}
-	//thresholds := []int{2, 1, 2, 3}
-
-	res, err := comsoc.SWFFactory(comsoc.BordaSWF, comsoc.TieBreakFactory([]comsoc.Alternative{3, 2, 1, 4}))(prefs)
-	
-	fmt.Println(res)
-  */
-  /*
+	/*
+		// TEST APPROVAL
 
 		prefs := [][]comsoc.Alternative{
 			{1, 3, 2},
@@ -147,7 +118,7 @@ func main() {
 		fmt.Println(res)
 	*/
 	/*
-
+		// TEST COPELAND
 		p := [][]comsoc.Alternative{
 			{1, 2, 3, 4},
 			{1, 2, 3, 4},
@@ -165,5 +136,17 @@ func main() {
 
 		fmt.Println(comsoc.CopelandSWF(p))
 	*/
+	/*
+		// TEST STV
+			p := [][]comsoc.Alternative{
+				{1, 3, 2},
+				{1, 2, 3},
+				{2, 3, 1},
+				{3, 1, 2},
+			}
 
+			res, _ := comsoc.STV_SWF(p)
+
+			fmt.Println(res)
+	*/
 }
