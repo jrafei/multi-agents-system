@@ -1,10 +1,5 @@
 package main
 
-import (
-	"ia04/comsoc"
-	"fmt"
-)
-
 func main() {
 
 	/*
@@ -82,6 +77,7 @@ func main() {
 		fmt.Println(res)
 	*/
 	/*
+
 		prefs := [][]comsoc.Alternative{
 			{1, 3, 2},
 			{1, 2, 3},
@@ -101,7 +97,7 @@ func main() {
 
 		fmt.Println(res)
 	*/
-
+  /*
 	p := [][]comsoc.Alternative{
 		{1, 3, 2},
 		{1, 2, 3},
@@ -112,5 +108,62 @@ func main() {
 	res, _ := comsoc.STV_SWF(p)
 
 	fmt.Println(res)
+  */
+  /*
+
+	prefs := [][]comsoc.Alternative{
+		{1, 3, 2},
+		{1, 2, 3},
+		{2, 3, 1},
+		{2, 1, 3},
+		{3, 1, 2},
+		{3, 1, 2},
+	}
+	//thresholds := []int{2, 1, 2, 3}
+
+	res, err := comsoc.SWFFactory(comsoc.BordaSWF, comsoc.TieBreakFactory([]comsoc.Alternative{3, 2, 1, 4}))(prefs)
+	
+	fmt.Println(res)
+  */
+  /*
+
+		prefs := [][]comsoc.Alternative{
+			{1, 3, 2},
+			{1, 2, 3},
+			{2, 3, 1},
+			{4, 1, 2},
+		}
+		thresholds := []int{2, 1, 2, 3}
+
+		res, err := comsoc.ApprovalSCF(prefs, thresholds)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+		if len(res) != 1 || res[0] != 1 {
+			fmt.Println("error, 1 should be the only best Alternative")
+		}
+
+		fmt.Println(res)
+	*/
+	/*
+
+		p := [][]comsoc.Alternative{
+			{1, 2, 3, 4},
+			{1, 2, 3, 4},
+			{1, 2, 3, 4},
+			{1, 2, 3, 4},
+			{1, 2, 3, 4},
+			{2, 3, 4, 1},
+			{2, 3, 4, 1},
+			{2, 3, 4, 1},
+			{2, 3, 4, 1},
+			{4, 3, 1, 2},
+			{4, 3, 1, 2},
+			{4, 3, 1, 2},
+		}
+
+		fmt.Println(comsoc.CopelandSWF(p))
+	*/
 
 }
