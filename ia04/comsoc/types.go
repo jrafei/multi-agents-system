@@ -12,15 +12,16 @@ type Count map[Alternative]int
 
 /********* TYPES AJOUTES *****************/
 
+// Structure définissant un tuple d'alternative ("first bat second")
 type AltTuple struct {
-	first Alternative
+	first  Alternative
 	second Alternative
 }
 
-func (t *AltTuple) First() Alternative{
+func (t *AltTuple) First() Alternative {
 	return t.first
 }
-func (t *AltTuple) Second() Alternative{
+func (t *AltTuple) Second() Alternative {
 	return t.second
 }
 
