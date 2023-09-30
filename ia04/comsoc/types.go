@@ -13,15 +13,15 @@ type Count map[Alternative]int
 /********* TYPES AJOUTES *****************/
 
 type AltTuple struct {
-	a Alternative
-	b Alternative
+	first Alternative
+	second Alternative
 }
 
 func (t *AltTuple) First() Alternative{
-	return t.a
+	return t.first
 }
 func (t *AltTuple) Second() Alternative{
-	return t.b
+	return t.second
 }
 
 /*---------- FONCTIONS UTILITAIRES ------------*/
