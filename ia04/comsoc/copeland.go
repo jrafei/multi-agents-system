@@ -1,8 +1,14 @@
 package comsoc
 
-/*
+import (
+	"errors"
+)
+
 func CopelandSWF(p Profile) (count Count, err error) {
-	err = CheckProfile(p) // à voir si on utilise CheckProfileAlternative()
+	if len(p) == 0 {
+		return nil, errors.New("profil is empty")
+	}
+	err = CheckProfileAlternative(p, p[0])
 	if err != nil {
 		return nil, err
 	}
@@ -78,4 +84,3 @@ func CopelandSCF(p Profile) (bestAlts []Alternative, err error) {
 	}
 	return maxCount(count), err
 }
-*/
