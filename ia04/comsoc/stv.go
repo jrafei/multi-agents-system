@@ -1,21 +1,21 @@
 package comsoc
 
-/*
+import (
+	"errors"
+)
+
 func STV_SWF(p Profile) (count Count, err error) {
-
-	alts := make([]Alternative, 0)
-
-	for _, val := range p[0] {
-		alts = append(alts, val)
+	if len(p) == 0 {
+		return nil, errors.New("profil is empty")
 	}
-	err = CheckProfileAlternative(p, alts)
-	// vérification des préferences, si une incohérence survient par rapport à la liste d'alternatives, une erreur sera générée
+	err = CheckProfileAlternative(p, p[0])
 	if err != nil {
 		return nil, err
 	}
-	counter := len(alts) - 1
+
+	counter := len(p[0]) - 1
 	count = make(Count)
-	for _, alt := range alts {
+	for _, alt := range p[0] {
 		count[alt] = 0 // Initialisation du comptage à 0 pour chaque alternative
 	}
 
@@ -40,7 +40,7 @@ func STV_SWF(p Profile) (count Count, err error) {
 
 func absoluteMajority(p Profile, count Count) bool {
 	// Vérification si la majorité absolue est atteinte
-	maj_abs := len(p) //2
+	maj_abs := (len(p) / 2) + 1
 	for _, votes := range count {
 		if votes > maj_abs {
 			return true
@@ -50,4 +50,3 @@ func absoluteMajority(p Profile, count Count) bool {
 }
 
 // func STV_SCF(p Profile) (bestAlts []Alternative, err error) {}
-*/

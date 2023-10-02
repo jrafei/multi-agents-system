@@ -1,5 +1,6 @@
 package main
 
+
 func main() {
 	/*
 			// Test
@@ -62,20 +63,21 @@ func main() {
 		fmt.Println(comsoc.MajoritySWF(profile))
 		fmt.Println(comsoc.MajoritySCF(profile))
 		fmt.Println(comsoc.BordaSCF(profile))
-
-
+		*/
+		
+/*
 			// TEST BORDA
 				prefs := [][]comsoc.Alternative{
 					{1, 2, 3},
 					{1, 2, 3},
-					{3, 2, 1},
+					{2, 3, 1},
 					{2, 3, 1},
 				}
 
-				res, _ := comsoc.BordaSCF(prefs)
+				res, _ := comsoc.BordaSWF(prefs)
 
 				fmt.Println(res)
-	*/
+	
 
 	/*
 		// TEST SWF
