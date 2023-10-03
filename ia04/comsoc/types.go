@@ -26,14 +26,14 @@ func (t *AltTuple) Second() Alternative {
 	return t.second
 }
 
+// Compte le nombre de fois que les alternatives du profil battent les autre alternatives.
+// La fonction retourne un dictionnaire dont les clés sont des tuples (a,b) (" a bat b "), et les valeurs le nombre de fois que cela arrive.
 func CountIsPref(p Profile) map[AltTuple]int {
-	// Compte le nombre de fois que les alternatives du profil battent les autre alternatives
-	// La fonction retourne un dictionnaire dont les clés sont des tuples (a,b) (" a bat b "), et les valeurs le nombre de fois que cela arrive.
 	win := make(map[AltTuple]int) // enregistre le nombre de fois où a bat b
 	for _, pref := range p {
 		for index, alt := range pref {
 			if alt == pref[len(pref)-1] {
-				// On stop si on arrive à la dernière valeur (inutile de l'étudier)
+				// On stop si on arrive à la dernière valeur (inutile de l'étudier car elle est battue par tout le monde)
 				break
 			} else {
 				for _, alt2 := range pref[index+1:] {
@@ -75,10 +75,10 @@ func maxCount(count Count) (bestAlts []Alternative) {
 	// Récupération des clés de valeur max ( plusieurs clés possibles )
 	bestAlts = make([]Alternative, 0)
 	var max_pts int
-	for _,alt := range count {
-        max_pts = alt
+	for _, alt := range count {
+		max_pts = alt
 		break
-    }
+	}
 	for k, v := range count {
 		if v == max_pts {
 			// On ajoute la clé si elle est égale à la valeur max

@@ -18,7 +18,7 @@ func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Al
 	* On ajoute les alts triées dans un nouveau tableau
 	* On les supprime de l'ancien tableau
 	* On recommence sur le tableau restant
-	* à la fin on obtient un tableau des alternatives triés par l'ordre donné en cas d'égalite.
+	* à la fin on obtient un tableau des alternatives triées par l'ordre donné, en cas d'égalite.
 	 */
 	f_swf := func(p Profile) ([]Alternative, error) {
 		// Construction de la fonction avec application tiebreak
