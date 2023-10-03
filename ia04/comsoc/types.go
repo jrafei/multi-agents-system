@@ -74,7 +74,11 @@ func isPref(alt1, alt2 Alternative, prefs []Alternative) bool {
 func maxCount(count Count) (bestAlts []Alternative) {
 	// Récupération des clés de valeur max ( plusieurs clés possibles )
 	bestAlts = make([]Alternative, 0)
-	max_pts := 0
+	var max_pts int
+	for _,alt := range count {
+        max_pts = alt
+		break
+    }
 	for k, v := range count {
 		if v == max_pts {
 			// On ajoute la clé si elle est égale à la valeur max

@@ -1,6 +1,5 @@
 package main
 
-
 func main() {
 	/*
 			// Test
@@ -63,39 +62,44 @@ func main() {
 		fmt.Println(comsoc.MajoritySWF(profile))
 		fmt.Println(comsoc.MajoritySCF(profile))
 		fmt.Println(comsoc.BordaSCF(profile))
-		*/
-		
-/*
-			// TEST BORDA
-				prefs := [][]comsoc.Alternative{
-					{1, 2, 3},
-					{1, 2, 3},
-					{2, 3, 1},
-					{2, 3, 1},
-				}
+	*/
 
-				res, _ := comsoc.BordaSWF(prefs)
+	/*
+		// TEST BORDA
+			prefs := [][]comsoc.Alternative{
+				{1, 2, 3},
+				{1, 2, 3},
+				{2, 3, 1},
+				{2, 3, 1},
+			}
 
-				fmt.Println(res)
-	
+			res, _ := comsoc.BordaSWF(prefs)
 
+			fmt.Println(res)
+
+
+	*/
 	/*
 		// TEST SWF
 
 		prefs := [][]comsoc.Alternative{
-			{1, 3, 2},
-			{1, 2, 3},
-			{2, 3, 1},
-			{2, 1, 3},
-			{3, 1, 2},
-			{3, 1, 2},
+			{2, 1,3,4,5,6},
+			{5,4,2,3,1,6},
+			{5,2,3,4,1,6},
+			{2,1,3,4,5,6},
+			{2,4,3,5,1,6},
+			{5,2,3,6,4,1},
 		}
 		//thresholds := []int{2, 1, 2, 3}
 
-		res, err := comsoc.SWFFactory(comsoc.BordaSWF, comsoc.TieBreakFactory([]comsoc.Alternative{3, 2, 1, 4}))(prefs)
+		res, _ := comsoc.SWFFactory(comsoc.BordaSWF, comsoc.TieBreakFactory([]comsoc.Alternative{1,5,4,6,3,2}))(prefs)
 
 		fmt.Println(res)
+
+		res2, _ := comsoc.SCFFactory(comsoc.BordaSCF, comsoc.TieBreakFactory([]comsoc.Alternative{1,5,4,6,3,2}))(prefs)
+		fmt.Println(res2)
 	*/
+
 	/*
 		// TEST APPROVAL
 
