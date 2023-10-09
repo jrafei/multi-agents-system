@@ -6,7 +6,7 @@ import (
 
 type Alternative int
 
-type AgentID string // à confirmer
+type AgentID string
 
 type AgentI interface {
 	Equal(ag AgentI) bool
@@ -44,6 +44,7 @@ func slicesEquality(a, b []Alternative) bool {
 	return true
 }
 
+
 func (a *Agent) Clone() Agent {
 	prefs_slc := make([]Alternative, len(a.Prefs))
 	for i, _ := range a.Prefs {
@@ -64,6 +65,7 @@ func (a *Agent) String() string {
 	infos += "-------------------------"
 	return infos
 }
+
 
 func (ag *Agent) Prefers(a Alternative, b Alternative) bool {
 	for _, v := range ag.Prefs {
