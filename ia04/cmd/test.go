@@ -1,9 +1,6 @@
 package main
 
-import(
-	"ia04/comsoc"
-	"fmt"
-)
+
 func main() {
 	/*
 			// Test
