@@ -4,12 +4,6 @@ import(
 	"fmt"
 )
 
-// Elimination d'un élément, à partir de son index, dans une slice
-func remove(s []Alternative, index int) []Alternative {
-	ret := make([]Alternative, 0)
-	ret = append(ret, s[:index]...)
-	return append(ret, s[index+1:]...)
-}
 
 func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Alternative, error)) func(Profile) ([]Alternative, error) {
 	/* Idée : 
@@ -40,7 +34,7 @@ func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Al
 					return nil, err
 				}
 				index := rank(alt, alts)
-				alts = remove(alts, index)
+				alts = Remove(alts, index)
 				sorted_alts = append(sorted_alts, alt)
 
 				// suppression des alts étudiées de count

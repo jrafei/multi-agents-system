@@ -1,5 +1,9 @@
 package main
 
+import(
+	"ia04/comsoc"
+	"fmt"
+)
 func main() {
 	/*
 			// Test
@@ -150,7 +154,7 @@ func main() {
 				{3, 1, 2},
 			}
 
-			res, _ := comsoc.STV_SWF(p)
+			res, _ := comsoc.STV_SWF(p,[]comsoc.Alternative{1,2,3})
 
 			fmt.Println(res)
 	*/

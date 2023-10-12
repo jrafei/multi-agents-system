@@ -51,6 +51,39 @@ func CountIsPref(p Profile) map[AltTuple]int {
 	return win
 }
 
+
+// renvoie les meilleures alternatives pour un décomtpe donné
+func minCount(count Count) (worstAlts []Alternative) {
+	// Récupération des clés de valeur max ( plusieurs clés possibles )
+	worstAlts = make([]Alternative, 0)
+	var min_pts int
+	for _, alt := range count {
+		min_pts = alt
+		break
+	}
+	for k, v := range count {
+		if v == min_pts {
+			// On ajoute la clé si elle est égale à la valeur max
+			worstAlts = append(worstAlts, k)
+		} else if v < min_pts {
+			// On reconstruit un tableau d'une clé si plus grand
+			worstAlts = make([]Alternative, 1)
+			worstAlts[0] = k
+			min_pts = v
+		}
+	}
+	return worstAlts
+}
+
+
+// Elimination d'un élément, à partir de son index, dans une slice
+func Remove(s []Alternative, index int) []Alternative {
+	ret := make([]Alternative, 0)
+	ret = append(ret, s[:index]...)
+	return append(ret, s[index+1:]...)
+}
+
+
 /*---------- FONCTIONS UTILITAIRES ------------*/
 
 // renvoie l'indice ou se trouve alt dans prefs
