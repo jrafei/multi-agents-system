@@ -1,6 +1,5 @@
 package main
 
-
 func main() {
 	/*
 			// Test
@@ -151,7 +150,7 @@ func main() {
 				{3, 1, 2},
 			}
 
-			res, _ := comsoc.STV_SWF(p,[]comsoc.Alternative{1,2,3})
+			res, _ := comsoc.STV_SWF(p)
 
 			fmt.Println(res)
 	*/
