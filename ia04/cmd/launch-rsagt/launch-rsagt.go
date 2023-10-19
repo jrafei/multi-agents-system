@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"ia04/agt/restballotagent"
+	"ia04/agt/restserveragent"
 )
 
 func main() {

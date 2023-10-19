@@ -78,4 +78,4 @@ func (ag *Agent) Prefers(a Alternative, b Alternative) bool {
 	return false // Par défaut, à vérifier
 }
 
-func Start();
+func Start(){};

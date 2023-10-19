@@ -16,7 +16,7 @@ func main() {
 	ops := [...]string{"+", "-", "*"}
 
 	clAgts := make([]restclientagent.RestVoterAgent, 0, n)
-	servAgt := restserveragent.NewRestServerAgent(url1)
+	servAgt := restserveragent.NewRestBallotAgent(url1)
 
 	log.Println("démarrage du serveur...")
 	go servAgt.Start()
@@ -27,7 +27,7 @@ func main() {
 		op := ops[rand.Intn(3)]
 		op1 := rand.Intn(100)
 		op2 := rand.Intn(100)
-		agt := restclientagent.NewRestClientAgent(id, url2, op, op1, op2)
+		agt := restclientagent.NewRestVoterAgent(id, url2, op, op1, op2)
 		clAgts = append(clAgts, *agt)
 	}
 

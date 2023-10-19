@@ -12,5 +12,7 @@ type RequestVote struct {
 }
 
 type Response struct {
-	Result int `json:"res"`
+	Ballot_id string `json:"ballot-id"`
+	Winner int  `json:"winner,omitempty"`
+	Ranking []int `json:"ranking,omitempty"`
 }
