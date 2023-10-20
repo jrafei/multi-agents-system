@@ -137,10 +137,10 @@ func (rsa *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 	// Vérification des préférences
 	prefs := make([]comsoc.Alternative, len(vote.Preferences))
 	alts := make([]comsoc.Alternative, rsa.nb_alts)
-	for i,_ := range alts {
+	for i, _ := range alts {
 		alts[i] = comsoc.Alternative(i + 1)
 	}
-	for i,_ := range prefs {
+	for i, _ := range prefs {
 		prefs[i] = comsoc.Alternative(vote.Preferences[i])
 	}
 
@@ -154,8 +154,13 @@ func (rsa *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 	rsa.profile = append(rsa.profile, prefs)
 
 	// Ajout des options
-	if vote.Options != nil {
+	if vote.Options != nil && len(vote.Options) > 0 {
 		rsa.options = append(rsa.options, vote.Options)
+	} else if rsa.rule == "approval" {
+		// vérification qu'il y a bien un seuil de préférence pour la méthode par approbation
+		resp.StatusCode = 400
+		resp.Msg = "bad request, aucun seuil de préférence saisi"
+		return
 	}
 
 	rsa.voter_ids[vote.AgentID] = true // on indique que l'agent a voté
