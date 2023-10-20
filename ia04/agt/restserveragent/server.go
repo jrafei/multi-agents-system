@@ -10,9 +10,8 @@ import (
 	"sync"
 	"time"
 
-
-	rad "ia04/agt/restballotagent"
 	rad_t "ia04/agt"
+	rad "ia04/agt/restballotagent"
 	comsoc "ia04/comsoc"
 )
 
@@ -71,12 +70,12 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	var resp rad_t.Response
 
 	fmt.Println(req)
-	
+
 	// Vérification des paramètres
 	if req.Nb_alts < 0 {
 
 		w.WriteHeader(http.StatusBadRequest)
-		msg := fmt.Sprintf("Negative number of alternatives (%s)", req.Nb_alts)
+		msg := fmt.Sprintf("Negative number of alternatives (%d)", req.Nb_alts)
 		w.Write([]byte(msg))
 		return
 	} else if len(req.Voters) <= 0 {
@@ -91,7 +90,18 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 		return
 	} else if req.Deadline <= time.Now().Format(time.RFC3339) {
 		w.WriteHeader(http.StatusBadRequest)
-		msg := fmt.Sprintf("the deadline has already been passed (%s)", req.Deadline)
+		msg := fmt.Sprintf("The deadline has already been passed (%s)", req.Deadline)
+		w.Write([]byte(msg))
+		return
+	}
+
+	// Vérification de la méthode de vote
+	switch req.Rule {
+	case "majority","borda","approval","stv","copeland":
+		break
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+		msg := fmt.Sprintf("Unknown rule (%s)", req.Rule)
 		w.Write([]byte(msg))
 		return
 	}
@@ -111,7 +121,6 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 		w.Write([]byte(msg))
 		return
 	}
-	// faire vérif méthodes
 
 	// création d'une ballot si tout est conforme
 	ballot_id := string("scrutin" + strconv.Itoa(len(rsa.ballots)+1))
@@ -122,18 +131,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	// Lancement de la ballot par une go routine (ajout)
 	go ballot.Start(ballot_ch)
 
-	/*
-		switch req.Rule {
-		case "majority":
-			resp.Result = req.Args[0] * req.Args[1]
-		default:
-			w.WriteHeader(http.StatusNotImplemented)
-			msg := fmt.Sprintf("Unkonwn command '%s'", req.Operator)
-			w.Write([]byte(msg))
-			return
-		}
-	*/
-	// à modfier
+	// voir s'il faut modifier le code de retour (201 dans la consigne)
 	resp.Ballot_id = ballot_id
 	w.WriteHeader(http.StatusOK)
 	serial, _ := json.Marshal(resp)
