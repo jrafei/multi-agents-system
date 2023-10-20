@@ -1,6 +1,7 @@
 package restserveragent
 
 import (
+	"fmt"
 	rad_t "ia04/agt"
 	"ia04/comsoc"
 	com "ia04/comsoc"
@@ -160,6 +161,31 @@ func (rsa *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 	rsa.voter_ids[vote.AgentID] = true // on indique que l'agent a voté
 	resp.StatusCode = 200
 	resp.Msg = "vote pris en compte"
+
+	/********DEBUG********/
+	fmt.Println("-----------------")
+	fmt.Println("[DBG] Updated ballot after /vote :")
+	fmt.Println(rsa.id)
+	fmt.Println(rsa.deadline)
+	fmt.Println(rsa.nb_alts)
+	fmt.Println(rsa.rule)
+	fmt.Println(rsa.profile)
+	fmt.Println(rsa.options)
+	fmt.Println("-----------------")
+	/*********************/
+
+	/********DEBUG********/
+	fmt.Println("-----------------")
+	fmt.Println("[DBG] Response /vote from ballot to server :")
+	fmt.Println(rsa.id)
+	fmt.Println(rsa.deadline)
+	fmt.Println(rsa.nb_alts)
+	fmt.Println(rsa.rule)
+	fmt.Println(rsa.profile)
+	fmt.Println(rsa.options)
+	fmt.Println("-----------------")
+	/*********************/
+
 	return
 }
 

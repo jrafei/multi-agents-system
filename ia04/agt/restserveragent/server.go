@@ -75,7 +75,10 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	// traitement de la requête
 	var resp rad_t.Response
 
+	fmt.Println("-----------------")
+	fmt.Println("[DBG] Request /init_ballot :")
 	fmt.Println(req)
+	fmt.Println("-----------------")
 
 	// Vérification des paramètres
 	if req.Nb_alts < 0 {
@@ -116,15 +119,12 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 
 	tieb := make([]comsoc.Alternative, len(req.Tiebreak))
 	alts := make([]comsoc.Alternative, req.Nb_alts)
-	for i,_ := range alts {
+	for i, _ := range alts {
 		alts[i] = comsoc.Alternative(i + 1)
 	}
-	for i,_ := range tieb {
+	for i, _ := range tieb {
 		tieb[i] = comsoc.Alternative(req.Tiebreak[i])
 	}
-
-	fmt.Println(tieb)
-	fmt.Println(alts)
 
 	if comsoc.CheckProfile(tieb, alts) != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -147,6 +147,15 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	w.WriteHeader(http.StatusOK)
 	serial, _ := json.Marshal(resp)
 	w.Write(serial)
+
+	/********DEBUG********/
+	fmt.Println("-----------------")
+	fmt.Println("[DBG] Updated server after /init_ballot :")
+	fmt.Println(rsa.id)
+	fmt.Println(rsa.addr)
+	fmt.Println(rsa.ballots)
+	fmt.Println("-----------------")
+	/*********************/
 }
 
 func (rsa *RestServerAgent) vote(w http.ResponseWriter, r *http.Request) {
@@ -170,7 +179,10 @@ func (rsa *RestServerAgent) vote(w http.ResponseWriter, r *http.Request) {
 	// traitement de la requête
 	var resp rad_t.RequestVoteBallot
 
+	fmt.Println("-----------------")
+	fmt.Println("[DBG] Request /vote from client to server :")
 	fmt.Println(req)
+	fmt.Println("-----------------")
 
 	// Vérification du BallotID
 	ballot_chan, exists := rsa.ballots[req.BallotID]
@@ -183,7 +195,11 @@ func (rsa *RestServerAgent) vote(w http.ResponseWriter, r *http.Request) {
 
 	vote_req := rad_t.RequestVoteBallot{RequestVote: &req, Action: "vote", StatusCode: 0, Msg: ""}
 	// Transmission de la requête au ballot correspondant
+
+	fmt.Println("-----------------")
+	fmt.Println("[DBG] Request /vote from server to ballot :")
 	fmt.Println(vote_req)
+	fmt.Println("-----------------")
 	ballot_chan <- vote_req
 	// Attente de la response du ballot
 	resp = <-ballot_chan
