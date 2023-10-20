@@ -23,11 +23,13 @@ type RequestVoteBallot struct {
 	Action string
 	StatusCode int
 	Msg string
+	Winner int  
+	Ranking []int 
 }
 
 // Requête de réponse générale
 type Response struct {
-	Ballot_id string `json:"ballot-id"`
+	Ballot_id string `json:"ballot-id,omitempty"`
 	Winner int  `json:"winner,omitempty"`
 	Ranking []int `json:"ranking,omitempty"`
 }

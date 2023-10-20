@@ -53,8 +53,9 @@ func (*RestServerAgent) decodeRequestVote(r *http.Request) (req rad_t.RequestVot
 	return
 }
 
-// Execution de la création d'un ballot
+// Handler pour la création d'un ballot
 func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(time.Now().Format(time.RFC3339))
 	// On lock le système pour ne pas avoir de conflit (TODO : à modifier peut-être)
 	rsa.Lock()
 	defer rsa.Unlock()
@@ -158,67 +159,92 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	/*********************/
 }
 
-func (rsa *RestServerAgent) vote(w http.ResponseWriter, r *http.Request) {
-	// On lock le système pour ne pas avoir de conflit (TODO : à modifier peut-être)
-	rsa.Lock()
-	defer rsa.Unlock()
+// Utilisation d'un wrapper pour ajouter le paramètre action (type d'action à effectuer pour le ballot)
+// Permet d'éviter la duplication de code inutile aux deux types d'action
+func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-	// vérification de la méthode de la requête
-	if !rsa.checkMethod("POST", w, r) {
-		return
+		// On lock le système pour ne pas avoir de conflit (TODO : à modifier peut-être)
+		rsa.Lock()
+		defer rsa.Unlock()
+
+		// vérification de la méthode de la requête
+		if !rsa.checkMethod("POST", w, r) {
+			return
+		}
+
+		// décodage de la requête
+		req, err := rsa.decodeRequestVote(r)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, err.Error())
+			return
+		}
+
+		// traitement de la requête
+		var resp rad_t.RequestVoteBallot
+
+		/********DEBUG********/
+		fmt.Println("-----------------")
+		fmt.Printf("[DBG] Request /%s from client to server :\n", action)
+		fmt.Println(req)
+		fmt.Println("-----------------")
+		/*********************/
+
+		// Vérification du BallotID
+		ballot_chan, exists := rsa.ballots[req.BallotID]
+		if !exists {
+			if action == "vote" {
+				w.WriteHeader(http.StatusBadRequest)
+			} else if action == "result" {
+				w.WriteHeader(404)
+			}
+			msg := fmt.Sprintf("not found, the ballot '%s' doesn't exist", req.BallotID)
+			w.Write([]byte(msg))
+			return
+		}
+
+		vote_req := rad_t.RequestVoteBallot{RequestVote: &req, Action: action, StatusCode: 0, Msg: ""}
+
+		/********DEBUG********/
+		fmt.Println("-----------------")
+		fmt.Printf("[DBG] Request /%s from server to ballot :\n", action)
+		fmt.Println(vote_req)
+		fmt.Println("-----------------")
+		/*********************/
+
+		// Transmission de la requête au ballot correspondant
+		ballot_chan <- vote_req
+		// Attente de la response du ballot
+		resp = <-ballot_chan
+		// Transmission au de la réponse du ballot au client
+		switch action{
+		case "vote":
+			w.WriteHeader(resp.StatusCode)
+			msg := resp.Msg
+			w.Write([]byte(msg))
+		case "result":
+			if resp.StatusCode==200{
+				w.WriteHeader(http.StatusOK)
+				resp_finale := rad_t.Response{Winner: resp.Winner,Ranking: resp.Ranking}
+				serial, _ := json.Marshal(resp_finale)
+				w.Write(serial)
+			}else{
+				w.WriteHeader(resp.StatusCode)
+				msg := resp.Msg
+				w.Write([]byte(msg))
+			}
+			
+		}
 	}
-
-	// décodage de la requête
-	req, err := rsa.decodeRequestVote(r)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, err.Error())
-		return
-	}
-
-	// traitement de la requête
-	var resp rad_t.RequestVoteBallot
-
-	fmt.Println("-----------------")
-	fmt.Println("[DBG] Request /vote from client to server :")
-	fmt.Println(req)
-	fmt.Println("-----------------")
-
-	// Vérification du BallotID
-	ballot_chan, exists := rsa.ballots[req.BallotID]
-	if !exists {
-		w.WriteHeader(http.StatusBadRequest)
-		msg := fmt.Sprintf("The ballot '%s' doesn't exist", req.BallotID)
-		w.Write([]byte(msg))
-		return
-	}
-
-	vote_req := rad_t.RequestVoteBallot{RequestVote: &req, Action: "vote", StatusCode: 0, Msg: ""}
-	// Transmission de la requête au ballot correspondant
-
-	fmt.Println("-----------------")
-	fmt.Println("[DBG] Request /vote from server to ballot :")
-	fmt.Println(vote_req)
-	fmt.Println("-----------------")
-	ballot_chan <- vote_req
-	// Attente de la response du ballot
-	resp = <-ballot_chan
-	// Transmission au de la réponse du ballot au client
-	w.WriteHeader(resp.StatusCode)
-	msg := resp.Msg
-	w.Write([]byte(msg))
-
-}
-
-func (rsa *RestServerAgent) send_result(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rsa *RestServerAgent) Start() {
 	// création du multiplexer
 	mux := http.NewServeMux()
 	mux.HandleFunc("/new_ballot", rsa.init_ballot)
-	mux.HandleFunc("/vote", rsa.vote)
-	mux.HandleFunc("/result", rsa.send_result)
+	mux.HandleFunc("/vote", rsa.ballotHandler("vote"))
+	mux.HandleFunc("/result", rsa.ballotHandler("result"))
 
 	// création du serveur http
 	s := &http.Server{

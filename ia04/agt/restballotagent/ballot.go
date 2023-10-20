@@ -31,83 +31,23 @@ func NewRestBallotAgent(i string, ru string, d string, vot_ids []string, alts in
 	return &RestBallotAgent{id: i, rule: ru, deadline: d, voter_ids: voters, nb_alts: alts, tiebreak: tieb, server_chan: ch, profile: make(com.Profile, 0), options: make([][]int, 0)}
 }
 
-/*
-// Test de la méthode
-func (rsa *RestBallotAgent) checkMethod(method string, w http.ResponseWriter, r *http.Request) bool {
-	if r.Method != method {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		fmt.Fprintf(w, "method %q not allowed", r.Method)
-		return false
-	}
-	return true
-}
-*/
-
-/*
-func (*RestBallotAgent) decodeRequest(r *http.Request) (req rad.Request, err error) {
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(r.Body)
-	err = json.Unmarshal(buf.Bytes(), &req)
-	return
-}
-*/
-/*
-func (rsa *RestBallotAgent) init_ballot(w http.ResponseWriter, r *http.Request) {
-	// mise à jour du nombre de requêtes
-	rsa.Lock()
-	defer rsa.Unlock()
-	//rsa.reqCount++
-
-	// vérification de la méthode de la requête
-	if !rsa.checkMethod("POST", w, r) {
-		return
-	}
-
-	// décodage de la requête
-	req, err := rsa.decodeRequest(r)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, err.Error())
-		return
-	}
-
-	// traitement de la requête
-	var resp rad.Response
-
-	switch req.Operator {
-	case "*":
-		resp.Result = req.Args[0] * req.Args[1]
-	case "+":
-		resp.Result = req.Args[0] + req.Args[1]
-	case "-":
-		resp.Result = req.Args[0] - req.Args[1]
-	default:
-		w.WriteHeader(http.StatusNotImplemented)
-		msg := fmt.Sprintf("Unkonwn command '%s'", req.Operator)
-		w.Write([]byte(msg))
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	serial, _ := json.Marshal(resp)
-	w.Write(serial)
-}
-*/
-
 func (rsa *RestBallotAgent) Start(chan rad_t.RequestVoteBallot) {
 	// si le channel reçoit une demande, on lace la méthode associée
 	for {
-
+		var resp rad_t.RequestVoteBallot
 		req := <-rsa.server_chan
 		// Selection de l'action à effectuer
 		switch req.Action {
 		case "vote":
-			resp := rsa.Vote(req)
-			// Transmission de la response au serveur
-			rsa.server_chan <- resp
+			resp = rsa.Vote(req)
 		case "result":
-			rsa.Result()
+			resp = rsa.Result()
+		default:
+			resp.StatusCode = 400
+			resp.Msg = "bad request, unknown process for ballot"
 		}
+		// Transmission de la réponse au serveur
+		rsa.server_chan <- resp
 
 	}
 }
@@ -154,10 +94,10 @@ func (rsa *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 	rsa.profile = append(rsa.profile, prefs)
 
 	// Ajout des options
-	if vote.Options != nil && len(vote.Options) > 0 {
+	if vote.Options != nil && len(vote.Options) > 0 && (vote.Options[0] <= rsa.nb_alts && vote.Options[0] >= 1) { // On part du principe que la première valeur est un seuil de vote (cf.Approval)
 		rsa.options = append(rsa.options, vote.Options)
 	} else if rsa.rule == "approval" {
-		// vérification qu'il y a bien un seuil de préférence pour la méthode par approbation
+		// si pas de seuil de préférence pour la méthode par approbation, erreur !
 		resp.StatusCode = 400
 		resp.Msg = "bad request, aucun seuil de préférence saisi"
 		return
@@ -195,5 +135,46 @@ func (rsa *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 }
 
 func (rsa *RestBallotAgent) Result() (resp rad_t.RequestVoteBallot) {
+	// Vérification de la deadline
+	if rsa.deadline > time.Now().Format(time.RFC3339) {
+		resp.StatusCode = 425
+		resp.Msg = "too early"
+		return
+	}
+	var ranking []comsoc.Alternative
+	var err error
+	switch rsa.rule {
+	case "majority":
+		ranking, err = comsoc.SWFFactory(com.MajoritySWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
+	case "borda":
+		ranking, err = comsoc.SWFFactory(com.BordaSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
+	case "approval":
+		// TODO : test
+		// récupération des seuils de vote
+		thresholds := make([]int, len(rsa.voter_ids))
+		for i, _ := range rsa.options {
+			thresholds[i] = rsa.options[i][0] // On part du principe que c'est la première valeur
+		}
+		ranking, err = comsoc.SWFFactoryOptions[int](com.ApprovalSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile, thresholds)
+	case "stv":
+		// TODO : test
+		ranking, err = comsoc.SWFFactoryOptions[comsoc.Alternative](com.STV_SWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile, rsa.tiebreak)
+	case "copeland":
+		// TODO : test
+		ranking, err = comsoc.SWFFactory(com.CopelandSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
+
+	}
+	if err == nil {
+		resp.StatusCode = 200
+		resp.Msg = "OK"
+		resp.Ranking = make([]int, rsa.nb_alts)
+		for i, _ := range ranking {
+			resp.Ranking[i] = int(ranking[i])
+		}
+		resp.Winner = resp.Ranking[0]
+	} else {
+		resp.StatusCode = 500
+		resp.Msg = "internal server error, " + err.Error()
+	}
 	return
 }
