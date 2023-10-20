@@ -17,15 +17,14 @@ import (
 
 type RestServerAgent struct {
 	sync.Mutex
-	id       string
-	reqCount int
-	addr     string
-	ballots  map[string]chan string // associe ballot-id et chan associé pour communiquer avec le serveur
-	channel  chan string
+	id      string
+	addr    string
+	ballots map[string]chan rad_t.RequestVoteBallot // associe ballot-id et chan associé pour communiquer avec le serveur
+	channel chan rad_t.RequestVoteBallot
 }
 
 func NewRestServerAgent(addr string) *RestServerAgent {
-	return &RestServerAgent{id: addr, addr: addr, ballots: make(map[string]chan string), channel: make(chan string)}
+	return &RestServerAgent{id: addr, addr: addr, ballots: make(map[string]chan rad_t.RequestVoteBallot), channel: make(chan rad_t.RequestVoteBallot)}
 }
 
 // Test de la méthode
@@ -46,12 +45,19 @@ func (*RestServerAgent) decodeRequestBallot(r *http.Request) (req rad_t.RequestB
 	return
 }
 
+// Décode une requête de creation d'un ballot
+func (*RestServerAgent) decodeRequestVote(r *http.Request) (req rad_t.RequestVote, err error) {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(r.Body)
+	err = json.Unmarshal(buf.Bytes(), &req)
+	return
+}
+
 // Execution de la création d'un ballot
 func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) {
-	// mise à jour du nombre de requêtes
+	// On lock le système pour ne pas avoir de conflit (TODO : à modifier peut-être)
 	rsa.Lock()
 	defer rsa.Unlock()
-	rsa.reqCount++
 
 	// vérification de la méthode de la requête
 	if !rsa.checkMethod("POST", w, r) {
@@ -97,7 +103,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 
 	// Vérification de la méthode de vote
 	switch req.Rule {
-	case "majority","borda","approval","stv","copeland":
+	case "majority", "borda", "approval", "stv", "copeland":
 		break
 	default:
 		w.WriteHeader(http.StatusBadRequest)
@@ -107,14 +113,19 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Vérification du tiebreak
+
+	tieb := make([]comsoc.Alternative, len(req.Tiebreak))
 	alts := make([]comsoc.Alternative, req.Nb_alts)
-	tieb := make([]comsoc.Alternative, req.Nb_alts)
-	for i, _ := range tieb {
+	for i,_ := range alts {
 		alts[i] = comsoc.Alternative(i + 1)
+	}
+	for i,_ := range tieb {
 		tieb[i] = comsoc.Alternative(req.Tiebreak[i])
 	}
-	fmt.Println(alts)
+
 	fmt.Println(tieb)
+	fmt.Println(alts)
+
 	if comsoc.CheckProfile(tieb, alts) != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		msg := fmt.Sprintf("The tiebreak doesn't correctly represent the alternatives")
@@ -124,7 +135,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 
 	// création d'une ballot si tout est conforme
 	ballot_id := string("scrutin" + strconv.Itoa(len(rsa.ballots)+1))
-	ballot_ch := make(chan string)
+	ballot_ch := make(chan rad_t.RequestVoteBallot)
 	rsa.ballots[ballot_id] = ballot_ch
 	ballot := rad.NewRestBallotAgent(ballot_id, req.Rule, req.Deadline, req.Voters, req.Nb_alts, tieb, ballot_ch)
 
@@ -138,24 +149,60 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	w.Write(serial)
 }
 
-func (rsa *RestServerAgent) doReqcount(w http.ResponseWriter, r *http.Request) {
-	if !rsa.checkMethod("GET", w, r) {
+func (rsa *RestServerAgent) vote(w http.ResponseWriter, r *http.Request) {
+	// On lock le système pour ne pas avoir de conflit (TODO : à modifier peut-être)
+	rsa.Lock()
+	defer rsa.Unlock()
+
+	// vérification de la méthode de la requête
+	if !rsa.checkMethod("POST", w, r) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	rsa.Lock()
-	defer rsa.Unlock()
-	serial, _ := json.Marshal(rsa.reqCount)
-	w.Write(serial)
+	// décodage de la requête
+	req, err := rsa.decodeRequestVote(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	// traitement de la requête
+	var resp rad_t.RequestVoteBallot
+
+	fmt.Println(req)
+
+	// Vérification du BallotID
+	ballot_chan, exists := rsa.ballots[req.BallotID]
+	if !exists {
+		w.WriteHeader(http.StatusBadRequest)
+		msg := fmt.Sprintf("The ballot '%s' doesn't exist", req.BallotID)
+		w.Write([]byte(msg))
+		return
+	}
+
+	vote_req := rad_t.RequestVoteBallot{RequestVote: &req, Action: "vote", StatusCode: 0, Msg: ""}
+	// Transmission de la requête au ballot correspondant
+	fmt.Println(vote_req)
+	ballot_chan <- vote_req
+	// Attente de la response du ballot
+	resp = <-ballot_chan
+	// Transmission au de la réponse du ballot au client
+	w.WriteHeader(resp.StatusCode)
+	msg := resp.Msg
+	w.Write([]byte(msg))
+
+}
+
+func (rsa *RestServerAgent) send_result(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rsa *RestServerAgent) Start() {
 	// création du multiplexer
 	mux := http.NewServeMux()
 	mux.HandleFunc("/new_ballot", rsa.init_ballot)
-	mux.HandleFunc("/vote", rsa.doReqcount)
-	mux.HandleFunc("/result", rsa.doReqcount)
+	mux.HandleFunc("/vote", rsa.vote)
+	mux.HandleFunc("/result", rsa.send_result)
 
 	// création du serveur http
 	s := &http.Server{
