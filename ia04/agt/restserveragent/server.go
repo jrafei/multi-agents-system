@@ -1,5 +1,8 @@
 package restserveragent
 
+/*
+ * TOCHECK : ERROR 501 /vote (à quoi cela correspond-il ?)
+*/
 import (
 	"bytes"
 	"encoding/json"
@@ -258,3 +261,4 @@ func (rsa *RestServerAgent) Start() {
 	log.Println("Listening on", rsa.addr)
 	go log.Fatal(s.ListenAndServe())
 }
+

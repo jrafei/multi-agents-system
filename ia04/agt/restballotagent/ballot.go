@@ -149,18 +149,15 @@ func (rsa *RestBallotAgent) Result() (resp rad_t.RequestVoteBallot) {
 	case "borda":
 		ranking, err = comsoc.SWFFactory(com.BordaSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
 	case "approval":
-		// TODO : test
-		// récupération des seuils de vote
+		// récupération des seuils pour le vote
 		thresholds := make([]int, len(rsa.voter_ids))
 		for i, _ := range rsa.options {
 			thresholds[i] = rsa.options[i][0] // On part du principe que c'est la première valeur
 		}
 		ranking, err = comsoc.SWFFactoryOptions[int](com.ApprovalSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile, thresholds)
 	case "stv":
-		// TODO : test
 		ranking, err = comsoc.SWFFactoryOptions[comsoc.Alternative](com.STV_SWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile, rsa.tiebreak)
 	case "copeland":
-		// TODO : test
 		ranking, err = comsoc.SWFFactory(com.CopelandSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
 
 	}
