@@ -220,6 +220,11 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 		ballot_chan <- vote_req
 		// Attente de la response du ballot
 		resp = <-ballot_chan
+	
+		/********DEBUG********/
+		fmt.Println(resp)
+		/*********************/
+
 		// Transmission au de la réponse du ballot au client
 		switch action{
 		case "vote":
@@ -231,7 +236,7 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 				w.WriteHeader(http.StatusOK)
 				resp_finale := rad_t.Response{Winner: resp.Winner,Ranking: resp.Ranking}
 				serial, _ := json.Marshal(resp_finale)
-				w.Write(serial)
+				w.Write([]byte(serial))
 			}else{
 				w.WriteHeader(resp.StatusCode)
 				msg := resp.Msg
