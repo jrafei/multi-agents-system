@@ -1,8 +1,8 @@
 package main
 
 import (
-	"ia04/comsoc"
 	"fmt"
+	"ia04/comsoc"
 )
 
 func main() {
@@ -105,7 +105,7 @@ func main() {
 		fmt.Println(res2)
 	*/
 
-	
+	/*
 		// TEST APPROVAL
 
 		prefs := [][]comsoc.Alternative{
@@ -129,7 +129,25 @@ func main() {
 		//}
 
 		fmt.Println(res)
-	
+	*/
+	// TEST	CONDORCET
+
+	prefs := [][]comsoc.Alternative{
+		{1, 2, 3},
+		{1, 3, 2},
+		{3, 2, 1},
+	}
+
+	res, err := comsoc.CondorcetWinner(prefs)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	//if len(res) != 1 || res[0] != 1 {
+	//	fmt.Println("error, 1 should be the only best Alternative")
+	//}
+
+	fmt.Println(res)
 	/*
 		// TEST COPELAND
 		p := [][]comsoc.Alternative{
@@ -149,20 +167,20 @@ func main() {
 
 		fmt.Println(comsoc.CopelandSWF(p))
 	*/
-/*
-	// TEST STV
-	p := [][]comsoc.Alternative{
-		{1, 3, 2},
-		{1, 2, 3},
-		{2, 3, 1},
-		{3, 1, 2},
-	}
-	tieb := make([]comsoc.Alternative,3)
-	tieb[0] = comsoc.Alternative(1)
-	tieb[1] = comsoc.Alternative(2)
-	tieb[2] = comsoc.Alternative(3)
-	res, _ := comsoc.SWFFactoryOptions(comsoc.STV_SWF,comsoc.TieBreakFactory(tieb))(p,tieb)
+	/*
+		// TEST STV
+		p := [][]comsoc.Alternative{
+			{1, 3, 2},
+			{1, 2, 3},
+			{2, 3, 1},
+			{3, 1, 2},
+		}
+		tieb := make([]comsoc.Alternative,3)
+		tieb[0] = comsoc.Alternative(1)
+		tieb[1] = comsoc.Alternative(2)
+		tieb[2] = comsoc.Alternative(3)
+		res, _ := comsoc.SWFFactoryOptions(comsoc.STV_SWF,comsoc.TieBreakFactory(tieb))(p,tieb)
 
-	fmt.Println(res)
-*/
+		fmt.Println(res)
+	*/
 }

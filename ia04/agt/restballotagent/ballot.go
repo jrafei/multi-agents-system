@@ -159,16 +159,24 @@ func (rsa *RestBallotAgent) Result() (resp rad_t.RequestVoteBallot) {
 		ranking, err = comsoc.SWFFactoryOptions[comsoc.Alternative](com.STV_SWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile, rsa.tiebreak)
 	case "copeland":
 		ranking, err = comsoc.SWFFactory(com.CopelandSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
-
+	case "condorcet":
+		ranking, err = comsoc.CondorcetWinner(rsa.profile)
 	}
 	if err == nil {
 		resp.StatusCode = 200
 		resp.Msg = "OK"
-		resp.Ranking = make([]int, rsa.nb_alts)
-		for i, _ := range ranking {
-			resp.Ranking[i] = int(ranking[i])
+		if len(ranking)>1{
+			resp.Ranking = make([]int, rsa.nb_alts)
+			for i,_ := range ranking {
+				resp.Ranking[i] = int(ranking[i])
+			}
+			resp.Winner = resp.Ranking[0]
+		}else if len(ranking)==1{
+			resp.Winner = resp.Ranking[0]
+		}else{
+			resp.Msg = "Aucun gagnant pour la méthode de "+ rsa.rule
 		}
-		resp.Winner = resp.Ranking[0]
+		
 	} else {
 		resp.StatusCode = 500
 		resp.Msg = "internal server error, " + err.Error()
