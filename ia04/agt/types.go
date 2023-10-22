@@ -1,5 +1,9 @@
 package agt
 
+import (
+	coms "ia04/comsoc"
+)
+
 // Requête pour la création d'un agent
 type RequestBallot struct {
 	Rule     string   `json:"rule"`
@@ -11,25 +15,25 @@ type RequestBallot struct {
 
 // Requête pour la prise en compte d'un vote, et le résultat d'un scrutin
 type RequestVote struct {
-	AgentID string `json:"agent-id,omitempty"`
-	BallotID string `json:"ballot-id"`
-	Preferences []int `json:"prefs,omitempty"`
-	Options []int`json:"options,omitempty"`
+	AgentID     string             `json:"agent-id,omitempty"`
+	BallotID    string             `json:"ballot-id"`
+	Preferences []coms.Alternative `json:"prefs,omitempty"`
+	Options     []int              `json:"options,omitempty"`
 }
 
 // Requête échangée entre le ballot et le serveur
 type RequestVoteBallot struct {
-	*RequestVote
-	Action string
-	StatusCode int
-	Msg string
-	Winner int  
-	Ranking []int 
+	*RequestVote        //renseigné par le serveur
+	Action       string //renseigné par le serveur, ex : vote, result...
+	StatusCode   int    //renseigné par le ballot
+	Msg          string //renseigné par le ballot
+	Winner       int    //renseigné par le ballot
+	Ranking      []int  //renseigné par le ballot
 }
 
 // Requête de réponse générale
 type Response struct {
 	Ballot_id string `json:"ballot-id,omitempty"`
-	Winner int  `json:"winner,omitempty"`
-	Ranking []int `json:"ranking,omitempty"`
+	Winner    int    `json:"winner,omitempty"`
+	Ranking   []int  `json:"ranking,omitempty"`
 }

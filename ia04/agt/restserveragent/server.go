@@ -23,7 +23,7 @@ type RestServerAgent struct {
 	id      string
 	addr    string
 	ballots map[string]chan rad_t.RequestVoteBallot // associe ballot-id et chan associé pour communiquer avec le serveur
-	channel chan rad_t.RequestVoteBallot
+	channel chan rad_t.RequestVoteBallot //Sert à quoi ???
 }
 
 func NewRestServerAgent(addr string) *RestServerAgent {
@@ -57,6 +57,9 @@ func (*RestServerAgent) decodeRequestVote(r *http.Request) (req rad_t.RequestVot
 }
 
 // Handler pour la création d'un ballot
+// prend en argument : 
+// 1 - la requete http contenant les attributs de ballot codé par Marshal
+// 2 - 
 func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(time.Now().Format(time.RFC3339))
 	// On lock le système pour ne pas avoir de conflit (TODO : à modifier peut-être)
@@ -68,8 +71,8 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// décodage de la requête
-	req, err := rsa.decodeRequestBallot(r)
+	// décodage de la requête -> initialisation de structure RequestBallot
+	req, err := rsa.decodeRequestBallot(r) 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprint(w, err.Error())
@@ -119,7 +122,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Vérification du tiebreak
+	// Vérification du tiebreak : verifie si toutes les alternatives apparaissent dans la liste tiebreak
 
 	tieb := make([]comsoc.Alternative, len(req.Tiebreak))
 	alts := make([]comsoc.Alternative, req.Nb_alts)
@@ -132,7 +135,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 
 	if comsoc.CheckProfile(tieb, alts) != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		msg := fmt.Sprintf("The tiebreak doesn't correctly represent the alternatives")
+		msg := "The tiebreak doesn't correctly represent the alternatives"
 		w.Write([]byte(msg))
 		return
 	}
@@ -146,9 +149,9 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	// Lancement de la ballot par une go routine (ajout)
 	go ballot.Start(ballot_ch)
 
-	// voir s'il faut modifier le code de retour (201 dans la consigne)
+
 	resp.Ballot_id = ballot_id
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	serial, _ := json.Marshal(resp)
 	w.Write(serial)
 
@@ -162,7 +165,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	/*********************/
 }
 
-// Utilisation d'un wrapper pour ajouter le paramètre action (type d'action à effectuer pour le ballot)
+// Utilisation d'un wrapper pour ajouter le paramètre action (type d'action à effectuer pour le ballot, ex : vote, result)
 // Permet d'éviter la duplication de code inutile aux deux types d'action
 func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -225,7 +228,7 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 		fmt.Println(resp)
 		/*********************/
 
-		// Transmission au de la réponse du ballot au client
+		// Transmission de la réponse du ballot au client
 		switch action{
 		case "vote":
 			w.WriteHeader(resp.StatusCode)
@@ -256,7 +259,7 @@ func (rsa *RestServerAgent) Start() {
 
 	// création du serveur http
 	s := &http.Server{
-		Addr:           rsa.addr,
+		Addr:           rsa.addr, //adresse de localhost
 		Handler:        mux,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,

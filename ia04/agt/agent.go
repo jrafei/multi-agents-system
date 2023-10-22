@@ -2,9 +2,9 @@ package agt
 
 import (
 	"strconv"
+	coms "ia04/comsoc"
 )
 
-type Alternative int
 
 type AgentID string
 
@@ -13,16 +13,20 @@ type AgentI interface {
 	DeepEqual(ag AgentI) bool
 	Clone() AgentI
 	String() string
-	Prefers(a Alternative, b Alternative) bool
+	Prefers(a coms.Alternative, b coms.Alternative) bool
 	Start()
 }
 
 type Agent struct {
 	ID    AgentID
 	Name  string
-	Prefs []Alternative
+	Prefs []coms.Alternative
 }
 
+
+func NewAgent(id string, n string, prf []coms.Alternative) *Agent{
+	return &Agent{AgentID(id),n,prf}
+}
 func (a *Agent) Equal(ag Agent) bool {
 	return a == &ag
 }
@@ -31,7 +35,7 @@ func (a *Agent) DeepEqual(ag Agent) bool {
 	return a.ID == ag.ID && a.Name == ag.Name && slicesEquality(a.Prefs, ag.Prefs)
 }
 
-func slicesEquality(a, b []Alternative) bool {
+func slicesEquality(a, b []coms.Alternative) bool {
 	// Vérifie l'égalité de deux slices
 	if len(a) != len(b) {
 		return false
@@ -46,7 +50,7 @@ func slicesEquality(a, b []Alternative) bool {
 
 
 func (a *Agent) Clone() Agent {
-	prefs_slc := make([]Alternative, len(a.Prefs))
+	prefs_slc := make([]coms.Alternative, len(a.Prefs))
 	for i, _ := range a.Prefs {
 		prefs_slc[i] = a.Prefs[i]
 	}
@@ -67,7 +71,7 @@ func (a *Agent) String() string {
 }
 
 
-func (ag *Agent) Prefers(a Alternative, b Alternative) bool {
+func (ag *Agent) Prefers(a coms.Alternative, b coms.Alternative) bool {
 	for _, v := range ag.Prefs {
 		if v == a {
 			return true

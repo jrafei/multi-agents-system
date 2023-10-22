@@ -17,7 +17,7 @@ type RestBallotAgent struct {
 	voter_ids   map[string]bool // Le booléen permet de savoir si l'agent a déjà voté
 	nb_alts     int
 	tiebreak    []com.Alternative
-	server_chan chan rad_t.RequestVoteBallot
+	server_chan chan rad_t.RequestVoteBallot //channel qui écoute des requetes provenant du serveur (requetes de type vote ou result)
 	profile     com.Profile
 	options     [][]int
 }
@@ -31,8 +31,11 @@ func NewRestBallotAgent(i string, ru string, d string, vot_ids []string, alts in
 	return &RestBallotAgent{id: i, rule: ru, deadline: d, voter_ids: voters, nb_alts: alts, tiebreak: tieb, server_chan: ch, profile: make(com.Profile, 0), options: make([][]int, 0)}
 }
 
+/*
+traite les requetes que le channel 'server_chan' a entendu
+*/
 func (rsa *RestBallotAgent) Start(chan rad_t.RequestVoteBallot) {
-	// si le channel reçoit une demande, on lace la méthode associée
+	// si le channel reçoit une demande, on lance la méthode associée
 	for {
 		var resp rad_t.RequestVoteBallot
 		req := <-rsa.server_chan
@@ -52,17 +55,20 @@ func (rsa *RestBallotAgent) Start(chan rad_t.RequestVoteBallot) {
 	}
 }
 
-func (rsa *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.RequestVoteBallot) {
+/*
+ajout d'un vote s'il est valide
+*/
+func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.RequestVoteBallot) {
 
 	// Vérification de la deadline
-	if rsa.deadline <= time.Now().Format(time.RFC3339) {
+	if rba.deadline <= time.Now().Format(time.RFC3339) {
 		resp.StatusCode = 503
 		resp.Msg = "la deadline est dépassée"
 		return
 	}
 
 	// Vérification de l'AgentID
-	has_voted, exists := rsa.voter_ids[vote.AgentID]
+	has_voted, exists := rba.voter_ids[vote.AgentID]
 	if !exists {
 		resp.StatusCode = 400
 		resp.Msg = "bad request, le voteur n'est pas sur la liste"
@@ -76,7 +82,7 @@ func (rsa *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 
 	// Vérification des préférences
 	prefs := make([]comsoc.Alternative, len(vote.Preferences))
-	alts := make([]comsoc.Alternative, rsa.nb_alts)
+	alts := make([]comsoc.Alternative, rba.nb_alts)
 	for i, _ := range alts {
 		alts[i] = comsoc.Alternative(i + 1)
 	}
@@ -90,50 +96,52 @@ func (rsa *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 		return
 	}
 
-	// Ajout des préférences dans le profil
-	rsa.profile = append(rsa.profile, prefs)
-
 	// Ajout des options
-	if vote.Options != nil && len(vote.Options) > 0 && (vote.Options[0] <= rsa.nb_alts && vote.Options[0] >= 1) { // On part du principe que la première valeur est un seuil de vote (cf.Approval)
-		rsa.options = append(rsa.options, vote.Options)
-	} else if rsa.rule == "approval" {
+	if vote.Options != nil && len(vote.Options) > 0 && (vote.Options[0] <= rba.nb_alts && vote.Options[0] >= 1) { // On part du principe que la première valeur est un seuil de vote (cf.Approval)
+		rba.options = append(rba.options, vote.Options)
+	} else if rba.rule == "approval" {
 		// si pas de seuil de préférence pour la méthode par approbation, erreur !
 		resp.StatusCode = 400
 		resp.Msg = "bad request, aucun seuil de préférence saisi"
 		return
 	}
 
-	rsa.voter_ids[vote.AgentID] = true // on indique que l'agent a voté
+	// Ajout des préférences dans le profil
+	rba.profile = append(rba.profile, prefs)
+
+	rba.voter_ids[vote.AgentID] = true // on indique que l'agent a voté
 	resp.StatusCode = 200
 	resp.Msg = "vote pris en compte"
 
 	/********DEBUG********/
 	fmt.Println("-----------------")
 	fmt.Println("[DBG] Updated ballot after /vote :")
-	fmt.Println(rsa.id)
-	fmt.Println(rsa.deadline)
-	fmt.Println(rsa.nb_alts)
-	fmt.Println(rsa.rule)
-	fmt.Println(rsa.profile)
-	fmt.Println(rsa.options)
+	fmt.Println(rba.id)
+	fmt.Println(rba.deadline)
+	fmt.Println(rba.nb_alts)
+	fmt.Println(rba.rule)
+	fmt.Println(rba.profile)
+	fmt.Println(rba.options)
 	fmt.Println("-----------------")
 	/*********************/
 
 	/********DEBUG********/
 	fmt.Println("-----------------")
 	fmt.Println("[DBG] Response /vote from ballot to server :")
-	fmt.Println(rsa.id)
-	fmt.Println(rsa.deadline)
-	fmt.Println(rsa.nb_alts)
-	fmt.Println(rsa.rule)
-	fmt.Println(rsa.profile)
-	fmt.Println(rsa.options)
+	fmt.Println(rba.id)
+	fmt.Println(rba.deadline)
+	fmt.Println(rba.nb_alts)
+	fmt.Println(rba.rule)
+	fmt.Println(rba.profile)
+	fmt.Println(rba.options)
 	fmt.Println("-----------------")
 	/*********************/
 
 	return
 }
 
+/*
+ */
 func (rsa *RestBallotAgent) Result() (resp rad_t.RequestVoteBallot) {
 	// Vérification de la deadline
 	if rsa.deadline > time.Now().Format(time.RFC3339) {

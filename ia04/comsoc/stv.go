@@ -65,7 +65,7 @@ func absoluteMajority(p Profile, count Count) bool {
 	// Vérification si la majorité absolue est atteinte
 	maj_abs := (len(p) / 2) + 1
 	for _, votes := range count {
-		if votes > maj_abs {
+		if votes >= maj_abs {
 			return true
 		}
 	}

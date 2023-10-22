@@ -127,7 +127,6 @@ func maxCount(count Count) (bestAlts []Alternative) {
 }
 
 // vérifie les préférences d'un agent, par ex. qu'ils sont tous complets et que chaque alternative n'apparaît qu'une seule fois
-// ********************************************************* A modifier ************************************
 func CheckProfile(prefs []Alternative, alts []Alternative) error {
 	if len(prefs) == 0 {
 		return errors.New("the list of preference is empty")
