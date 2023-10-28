@@ -18,11 +18,12 @@ import (
 type RestVoterAgent struct {
 	agt *rad_t.Agent
 	url string //localhost:8080
+	opts []int
 }
 
-func NewRestVoterAgent(id string, n string, p []coms.Alternative, u string) *RestVoterAgent {
+func NewRestVoterAgent(id string, n string, p []coms.Alternative, u string, op []int) *RestVoterAgent {
 	ag := rad_t.NewAgent(id, n, p)
-	return &RestVoterAgent{ag, u}
+	return &RestVoterAgent{ag, u,op}
 }
 
 // traduire le résultat en chaine de caractère
@@ -38,14 +39,14 @@ func (rva *RestVoterAgent) treatResponseVote(r *http.Response) string {
 /*
 renvoie la réponse du serveur ou une erreur
 */
-func (rva *RestVoterAgent) doRequestVoter(ballotID string, opts []int) (res string, err error) {
+func (rva *RestVoterAgent) doRequestVoter(ballotID string) (res string, err error) {
 	// creation de requete de vote
-	/****** [TO DO] A VERIFIER si requestVote ou requestvoteBallot ******/
+	
 	req := agt.RequestVote{
 		AgentID:     string(rva.agt.ID),
 		BallotID:    ballotID,
 		Preferences: rva.agt.Prefs,
-		Options:     opts,
+		Options:     rva.opts,
 	}
 
 	// sérialisation de la requête
@@ -59,6 +60,7 @@ func (rva *RestVoterAgent) doRequestVoter(ballotID string, opts []int) (res stri
 
 	// traitement de la réponse
 	if err != nil {
+		// A REVOIR [TODO]
 		return
 	}
 
@@ -80,5 +82,16 @@ func (rva *RestVoterAgent) Start(ballotID string, opts []int) {
 		log.Fatal(rva.agt.ID, "error:", err.Error())
 	} else {
 		log.Printf("%s --------> %s \n", rva.agt.String(), res)
+	}
+}
+
+func (rca *RestClientAgent) Start() {
+	log.Printf("démarrage de %s", rca.id)
+	res, err := rca.doRequest() //res : resultat de la calule en entier
+
+	if err != nil {
+		log.Fatal(rca.id, "error:", err.Error())
+	} else {
+		log.Printf("[%s] %d %s %d = %d\n", rca.id, rca.arg1, rca.operator, rca.arg2, res)
 	}
 }

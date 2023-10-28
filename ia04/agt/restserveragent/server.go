@@ -48,7 +48,7 @@ func (*RestServerAgent) decodeRequestBallot(r *http.Request) (req rad_t.RequestB
 	return
 }
 
-// Décode une requête de creation d'un ballot
+// Décode une requête de proposition de vote 
 func (*RestServerAgent) decodeRequestVote(r *http.Request) (req rad_t.RequestVote, err error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)

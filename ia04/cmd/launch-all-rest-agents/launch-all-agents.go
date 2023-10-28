@@ -22,8 +22,11 @@ func main() {
 	log.Println("démarrage du serveur...")
 	go server.Start()
 
-	// initialisation d'un ballot ??? envoie d'une requete post localhost:8080/new_ballot
-	//Créer un requete new_ballot
+	
+	//Créer un requete RequestBallot et envoyer vers le serveur
+	// Création de plusieurs RequestVote et envoyer au serveur
+	// le serveur va renvoyer la requestReponse
+	//affichage de reponse du serveur 
 
 	//log.Println("démarrage des voters...")
 	for i := 0; i < n; i++ {
@@ -36,15 +39,13 @@ func main() {
 			prefs[ind] = coms.Alternative(rand.Intn(5) + 1)
 		}
 		agt := restclientagent.NewRestVoterAgent(id, name, prefs, url2)
-		votersAgts = append(votersAgts, *agt)
+		//votersAgts = append(votersAgts, *agt)
+		func(agt restclientagent.RestVoterAgent) {
+			go agt.Start()
+		}(agt)
 	}
 
-	for _, voter := range votersAgts {
-		// attention, obligation de passer par cette lambda pour faire capturer la valeur de l'itération par la goroutine
-		func(agt restclientagent.RestVoterAgent) {
-			go voter.Start()
-		}(voter)
-	}
+	
 
 	fmt.Scanln()
 }
