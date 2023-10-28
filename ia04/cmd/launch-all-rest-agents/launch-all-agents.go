@@ -7,7 +7,9 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"time"
 
+	"ia04/agt"
 	rad_t "ia04/agt"
 	restserveragent "ia04/agt/restserveragent"
 	restvoteragent "ia04/agt/restvoteragent"
@@ -28,7 +30,7 @@ func main() {
 	//Créer une requete RequestBallot et envoyer vers le serveur
 	req := rad_t.RequestBallot{
 		Rule:     "majority",
-		Deadline: "2023-11-04T23:05:08+02:00",
+		Deadline: "2023-11-28T23:50:00+02:00",
 		Voters:   []string{"ag_id01", "ag_id02", "ag_id03"},
 		Nb_alts:  5,
 		Tiebreak: []int{4, 2, 3, 5, 1},
@@ -39,35 +41,27 @@ func main() {
 	data, _ := json.Marshal(req) // data de type []octet (json encoding) , traduire la demande en liste de bit (encode)
 
 	// envoi de la requête
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data)) //resp : *http.Response , une requete sera envoyé au serveur
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data)) //resp de type *http.Response , une requete sera envoyé au serveur
 	if err != nil {
-		log.Println("erreur 1 ...")
+		log.Printf("[main] erreur %d ...", resp.StatusCode)
 		return
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
-		log.Println("erreur 2 ...", resp.StatusCode)
+		log.Printf("[main] erreur %d ...", resp.StatusCode)
 		return
 	}
 
-	//log.Println("response : ", resp)
-
-	// Création de plusieurs RequestVote et envoyer au serveur
-
-	// le serveur va renvoyer la requestReponse
-	//affichage de reponse du serveur
-
-	log.Println("démarrage des voters...")
+	log.Println("[main] démarrage des voters...")
 	votersAgts := make([]restvoteragent.RestVoterAgent, 0, nVoters)
 	for i := 0; i < nVoters; i++ {
 		id := fmt.Sprintf("ag_id%02d", i+1)
-		name := fmt.Sprintf("Voter02d", i+1)
+		name := fmt.Sprintf("Voter%02d", i+1)
 
 		var prefs []coms.Alternative
 		generated := make(map[int]bool)
 		for len(prefs) < nAlts {
-			num := rand.Intn(nAlts) // Vous pouvez ajuster la plage selon vos besoins
+			num := rand.Intn(nAlts)
 
 			// Vérifie si l'entier généré est déjà dans la carte
 			if !generated[num] {
@@ -84,12 +78,39 @@ func main() {
 
 	//log.Println(votersAgts)
 
+	// A REVOIR QUAND ON ENVOIE UNE REQUETE RESULT TODO
+	time.Sleep(10 * time.Second)
 	for _, agt := range votersAgts {
-		// attention, obligation de passer par cette lambda pour faire capturer la valeur de l'itération par la goroutine
-		//for est bcp plus rapide de go , si on met dans for seulement la ligne 40 , on applique le start pour l'agent 99 seulement
 		func(agt restvoteragent.RestVoterAgent) {
 			go agt.Start("scrutin1")
 		}(agt)
 	}
+
+	// creation de requete de result
+	req_res := agt.RequestVote{
+		BallotID: "scrutin1",
+	}
+
+	// sérialisation de la requête
+	url_res := url2 + "/result"
+	data_res, _ := json.Marshal(req_res)
+
+	// envoi de la requête au url
+	resp_res, err := http.Post(url_res, "application/json", bytes.NewBuffer(data_res))
+
+	// traitement de la réponse
+	if err != nil {
+		// A REVOIR [TODO]
+		log.Printf("[main] erreur %d ...", resp_res.StatusCode)
+		return
+	}
+
+	if resp_res.StatusCode != http.StatusOK {
+		log.Printf("[main] erreur %d ...", resp_res.StatusCode)
+		return
+	}
+
+	//log.Println(resp_res)
+
 	fmt.Scanln()
 }

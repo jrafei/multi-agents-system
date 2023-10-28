@@ -85,10 +85,8 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	// traitement de la requête
 	var resp rad_t.Response
 
-	fmt.Println("-----------------")
-	fmt.Println("[DBG] Request /init_ballot :")
+	fmt.Println("Request /init_ballot :")
 	fmt.Println(req)
-	fmt.Println("-----------------")
 
 	// Vérification des paramètres
 	if req.Nb_alts < 0 {
@@ -159,7 +157,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 
 	/********DEBUG********/
 	fmt.Println("-----------------")
-	fmt.Println("[DBG] Updated server after /init_ballot :")
+	fmt.Println("Updated server after /init_ballot :")
 	fmt.Println(rsa.id)
 	fmt.Println(rsa.addr)
 	fmt.Println(rsa.ballots)
@@ -193,11 +191,9 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 		var resp rad_t.RequestVoteBallot
 
 		/********DEBUG********/
-		fmt.Println("-----------------")
-		fmt.Printf("[DBG] [%s] Request /%s from client to server :\n", req.AgentID, action)
+		fmt.Printf("[%s] Request /%s from client to server :\n", req.AgentID, action)
 		fmt.Println("RequestVote : ", req)
-		fmt.Println("-----------------")
-		/*********************/
+		
 
 		// Vérification du BallotID
 		ballot_chan, exists := rsa.ballots[req.BallotID]
@@ -215,10 +211,8 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 		vote_req := rad_t.RequestVoteBallot{RequestVote: &req, Action: action, StatusCode: 0, Msg: ""}
 
 		/********DEBUG********/
-		fmt.Println("-----------------")
-		fmt.Printf("[DBG] [%s] Request /%s from server to ballot :\n", req.AgentID, action)
+		fmt.Printf("[%s] Request /%s from server to ballot :\n", req.AgentID, action)
 		fmt.Println("RequestVoteBallot : ", vote_req)
-		fmt.Println("-----------------")
 		/*********************/
 
 		// Transmission de la requête au ballot correspondant
