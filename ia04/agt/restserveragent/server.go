@@ -23,11 +23,13 @@ type RestServerAgent struct {
 	id      string
 	addr    string
 	ballots map[string]chan rad_t.RequestVoteBallot // associe ballot-id et chan associé pour communiquer avec le serveur
-	channel chan rad_t.RequestVoteBallot            //Sert à quoi ???
+	// channel chan rad_t.RequestVoteBallot            //Sert à quoi ???
 }
 
 func NewRestServerAgent(addr string) *RestServerAgent {
-	return &RestServerAgent{id: addr, addr: addr, ballots: make(map[string]chan rad_t.RequestVoteBallot), channel: make(chan rad_t.RequestVoteBallot)}
+	// return &RestServerAgent{id: addr, addr: addr, ballots: make(map[string]chan rad_t.RequestVoteBallot), channel: make(chan rad_t.RequestVoteBallot)}
+	return &RestServerAgent{id: addr, addr: addr, ballots: make(map[string]chan rad_t.RequestVoteBallot)}
+
 }
 
 // Test de la méthode
