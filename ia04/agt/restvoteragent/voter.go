@@ -78,7 +78,8 @@ func (rva *RestVoterAgent) Start(ballotID string) {
 	_, err := rva.doRequestVoter(ballotID)
 
 	if err != nil {
-		log.Fatal(rva.agt.ID, "error:", err.Error())
+		// log.Fatal(rva.agt.ID, "error:", err.Error())
+		log.Println(rva.agt.ID, "error:", err.Error())
 	} else {
 		log.Printf("[%s] Reponse de server au client : Vote enregistree ! \n", rva.agt.ID)
 	}
