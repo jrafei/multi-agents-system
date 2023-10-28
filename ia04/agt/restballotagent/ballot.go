@@ -59,7 +59,8 @@ func (rsa *RestBallotAgent) Start(chan rad_t.RequestVoteBallot) {
 ajout d'un vote s'il est valide
 */
 func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.RequestVoteBallot) {
-
+	rba.Lock()
+	defer rba.Unlock()
 	// Vérification de la deadline
 	if rba.deadline <= time.Now().Format(time.RFC3339) {
 		resp.StatusCode = 503
@@ -92,7 +93,7 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 
 	if comsoc.CheckProfile(prefs, alts) != nil {
 		resp.StatusCode = 400
-		resp.Msg = "bad request, les préférences ne sont pas conformes"
+		resp.Msg = " [Agent " + vote.RequestVote.AgentID + "] bad request, les préférences ne sont pas conformes"
 		return
 	}
 
@@ -115,7 +116,7 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 
 	/********DEBUG********/
 	fmt.Println("-----------------")
-	fmt.Println("[DBG] Updated ballot after /vote :")
+	fmt.Printf("[DBG] [%s] Updated ballot after /vote : \n", vote.AgentID)
 	fmt.Println(rba.id)
 	fmt.Println(rba.deadline)
 	fmt.Println(rba.nb_alts)
@@ -127,7 +128,7 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 
 	/********DEBUG********/
 	fmt.Println("-----------------")
-	fmt.Println("[DBG] Response /vote from ballot to server :")
+	fmt.Printf("[DBG] [%s] Response /vote from ballot to server : \n", vote.AgentID)
 	fmt.Println(rba.id)
 	fmt.Println(rba.deadline)
 	fmt.Println(rba.nb_alts)
@@ -143,6 +144,8 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 /*
  */
 func (rsa *RestBallotAgent) Result() (resp rad_t.RequestVoteBallot) {
+	rsa.Lock()
+	defer rsa.Unlock()
 	// Vérification de la deadline
 	if rsa.deadline > time.Now().Format(time.RFC3339) {
 		resp.StatusCode = 425

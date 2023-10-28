@@ -16,14 +16,14 @@ import (
 )
 
 type RestVoterAgent struct {
-	agt *rad_t.Agent
-	url string //localhost:8080
+	agt  *rad_t.Agent
+	url  string //localhost:8080
 	opts []int
 }
 
 func NewRestVoterAgent(id string, n string, p []coms.Alternative, u string, op []int) *RestVoterAgent {
 	ag := rad_t.NewAgent(id, n, p)
-	return &RestVoterAgent{ag, u,op}
+	return &RestVoterAgent{ag, u, op}
 }
 
 // traduire le résultat en chaine de caractère
@@ -31,7 +31,7 @@ func (rva *RestVoterAgent) treatResponseVote(r *http.Response) string {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
 	var resp string
-	json.Unmarshal(buf.Bytes(), &resp) //parser le data encodé et le met dans resp
+	json.Unmarshal(buf.Bytes(), &resp) //decode la reponse et le met dans resp
 
 	return resp
 }
@@ -41,7 +41,6 @@ renvoie la réponse du serveur ou une erreur
 */
 func (rva *RestVoterAgent) doRequestVoter(ballotID string) (res string, err error) {
 	// creation de requete de vote
-	
 	req := agt.RequestVote{
 		AgentID:     string(rva.agt.ID),
 		BallotID:    ballotID,
@@ -73,25 +72,14 @@ func (rva *RestVoterAgent) doRequestVoter(ballotID string) (res string, err erro
 	return
 }
 
-// TO DO : à vérifier si on mets les ballotID et opts en argument
-func (rva *RestVoterAgent) Start(ballotID string, opts []int) {
+// TO DO : à vérifier si on mets les ballotID
+func (rva *RestVoterAgent) Start(ballotID string) {
 	log.Printf("démarrage de %s", rva.agt.ID)
-	res, err := rva.doRequestVoter(ballotID, opts)
+	_, err := rva.doRequestVoter(ballotID)
 
 	if err != nil {
 		log.Fatal(rva.agt.ID, "error:", err.Error())
 	} else {
-		log.Printf("%s --------> %s \n", rva.agt.String(), res)
-	}
-}
-
-func (rca *RestClientAgent) Start() {
-	log.Printf("démarrage de %s", rca.id)
-	res, err := rca.doRequest() //res : resultat de la calule en entier
-
-	if err != nil {
-		log.Fatal(rca.id, "error:", err.Error())
-	} else {
-		log.Printf("[%s] %d %s %d = %d\n", rca.id, rca.arg1, rca.operator, rca.arg2, res)
+		log.Printf("[%s] Reponse de server au client : Vote enregistree ! \n", rva.agt.ID)
 	}
 }

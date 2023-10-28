@@ -3,3 +3,6 @@ Commentaires Jana :
 - les clients sont les personnes qui demande de faire un vote ou d'obtenir le resultat de scrutin
 - c quoi l'interet de l'attribut channel du structure RestServeurAgent ???
 - Preferences []int dans la definition de RequestVote a été modifié à []Alternative
+
+Nouveaux commentaires :
+j'ai ajouter un lock dans la fonction Vote et la fonction Result du ballot.go (A vérifier)

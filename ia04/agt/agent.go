@@ -59,7 +59,7 @@ func (a *Agent) Clone() Agent {
 
 func (a *Agent) String() string {
 	var infos string
-	infos = "--------------------------"
+	infos = "--------------------------\n"
 	infos += "Agent ID : " + string(a.ID) + "\n"
 	infos += "Agent name : " + a.Name + "\n"
 	infos += "Agent preferences : \n"
