@@ -7,6 +7,7 @@ import (
 	com "ia04/comsoc"
 	"sync"
 	"time"
+	"errors"
 )
 
 type RestBallotAgent struct {
@@ -17,7 +18,7 @@ type RestBallotAgent struct {
 	voter_ids   map[string]bool // Le booléen permet de savoir si l'agent a déjà voté
 	nb_alts     int
 	tiebreak    []com.Alternative
-	server_chan chan rad_t.RequestVoteBallot //channel qui écoute des requetes provenant du serveur (requetes de type vote ou result)
+	server_chan chan rad_t.RequestVoteBallot // canal de communication entre le scrutin et le serveur (requetes de type vote ou result)
 	profile     com.Profile
 	options     [][]int
 }
@@ -171,11 +172,12 @@ func (rsa *RestBallotAgent) Result() (resp rad_t.RequestVoteBallot) {
 	case "copeland":
 		ranking, err = comsoc.SWFFactory(com.CopelandSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
 	case "condorcet":
-		fmt.Println("OK1")
 		ranking, err = comsoc.CondorcetWinner(rsa.profile)
 		fmt.Println(ranking, err)
+	default :
+		err = errors.New("unknown rule")
 	}
-	//TODO : ajouter cas par défaut
+
 
 	if err == nil {
 		resp.StatusCode = 200
