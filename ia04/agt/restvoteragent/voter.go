@@ -60,8 +60,33 @@ func (rva *RestVoterAgent) doRequestVoter(ballotID string) (res string, err erro
 	// traitement de la réponse
 	if err != nil {
 		// A REVOIR [TODO]
+		return "",err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
 		return
 	}
+	res = rva.treatResponseVote(resp)
+
+	return
+}
+
+
+
+func (rva *RestVoterAgent) DoRequestResult(ballotID string) (res string, err error) {
+	// creation de requete de resultat
+	req := rad_t.RequestVote{
+		BallotID: "scrutin1",
+	}
+
+	// sérialisation de la requête
+	url := rva.url + "/result"
+	data, _ := json.Marshal(req) // code la requete vote en liste de bit
+
+	// envoi de la requête au url
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
+
 
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)

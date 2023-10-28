@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"time"
 
 	rad_t "ia04/agt"
 	restserveragent "ia04/agt/restserveragent"
@@ -15,7 +16,7 @@ import (
 )
 
 func main() {
-	const nVoters = 3 // 3 voters
+	const nVoters = 5 // 5 voters
 	const nAlts = 5   // 5 alternatives
 	const url1 = ":8080"
 	const url2 = "http://localhost:8080"
@@ -26,9 +27,10 @@ func main() {
 	go server.Start()
 
 	//Créer une requete RequestBallot et envoyer vers le serveur
+	deadline := time.Now().Add(time.Second*10).Format(time.RFC3339)
 	req := rad_t.RequestBallot{
 		Rule:     "majority",
-		Deadline: "2023-11-04T23:05:08+02:00",
+		Deadline: deadline,			// On implémente une deadline à + 10 secondes
 		Voters:   []string{"ag_id01", "ag_id02", "ag_id03"},
 		Nb_alts:  5,
 		Tiebreak: []int{4, 2, 3, 5, 1},
@@ -40,14 +42,22 @@ func main() {
 
 	// envoi de la requête
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data)) //resp : *http.Response , une requete sera envoyé au serveur
+	/*
 	if err != nil {
 		log.Println("erreur 1 ...")
-		return
+		//return
 	}
-
+	*/
+	/*
 	if resp.StatusCode != http.StatusCreated {
 		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
 		log.Println("erreur 2 ...", resp.StatusCode)
+		//return
+	}
+	*/
+	if err != nil {
+		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
+		log.Println("erreur ", resp.StatusCode)
 		return
 	}
 
@@ -80,10 +90,17 @@ func main() {
 		ops[0] = rand.Intn(5) + 1
 		agt := restvoteragent.NewRestVoterAgent(id, name, prefs, url2, ops)
 		votersAgts = append(votersAgts, *agt)
+
+		// attention, obligation de passer par cette lambda pour faire capturer la valeur de l'itération par la goroutine
+		//for est bcp plus rapide de go , si on met dans for seulement la ligne 40 , on applique le start pour l'agent 99 seulement
+		func() {
+			go agt.Start("scrutin1")
+		}()
 	}
 
 	//log.Println(votersAgts)
 
+	/*
 	for _, agt := range votersAgts {
 		// attention, obligation de passer par cette lambda pour faire capturer la valeur de l'itération par la goroutine
 		//for est bcp plus rapide de go , si on met dans for seulement la ligne 40 , on applique le start pour l'agent 99 seulement
@@ -91,5 +108,19 @@ func main() {
 			go agt.Start("scrutin1")
 		}(agt)
 	}
-	fmt.Scanln()
+	*/
+
+	for{
+		// Récupération du résultat du scrutin
+		if time.Now().Format(time.RFC3339) > deadline {
+			resp_s,err := votersAgts[rand.Intn(nVoters)].DoRequestResult("scrutin1")
+			if err!=nil{
+				// TODO
+			}else {
+				log.Printf("[%s] Reponse de server au client : %s","scrutin1" ,resp_s)
+			}
+			return
+
+		}
+	}
 }
