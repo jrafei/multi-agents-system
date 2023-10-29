@@ -17,7 +17,7 @@ import (
 
 type RestVoterAgent struct {
 	agt  *rad_t.Agent
-	url  string //localhost:8080
+	url_server  string //localhost:8080
 	opts []int
 }
 
@@ -49,7 +49,7 @@ func (rva *RestVoterAgent) doRequestVoter(ballotID string) (res string, err erro
 	}
 
 	// sérialisation de la requête
-	url := rva.url + "/vote"
+	url := rva.url_server + "/vote"
 	data, _ := json.Marshal(req) // code la requete vote en liste de bit
 
 	// envoi de la requête au url
@@ -81,7 +81,7 @@ func (rva *RestVoterAgent) DoRequestResult(ballotID string) (res string, err err
 	}
 
 	// sérialisation de la requête
-	url := rva.url + "/result"
+	url := rva.url_server + "/result"
 	data, _ := json.Marshal(req) // code la requete vote en liste de bit
 
 	// envoi de la requête au url
