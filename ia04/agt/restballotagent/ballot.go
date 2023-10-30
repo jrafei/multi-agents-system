@@ -1,13 +1,14 @@
 package restserveragent
 
 import (
+	"errors"
 	"fmt"
 	rad_t "ia04/agt"
 	"ia04/comsoc"
 	com "ia04/comsoc"
+	"net/http"
 	"sync"
 	"time"
-	"errors"
 )
 
 type RestBallotAgent struct {
@@ -47,7 +48,7 @@ func (rsa *RestBallotAgent) Start(chan rad_t.RequestVoteBallot) {
 		case "result":
 			resp = rsa.Result()
 		default:
-			resp.StatusCode = 400
+			resp.StatusCode = http.StatusBadRequest
 			resp.Msg = "bad request, unknown process for ballot"
 		}
 		// Transmission de la réponse au serveur
@@ -64,7 +65,7 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 	defer rba.Unlock()
 	// Vérification de la deadline
 	if rba.deadline <= time.Now().Format(time.RFC3339) {
-		resp.StatusCode = 503
+		resp.StatusCode = http.StatusGatewayTimeout
 		resp.Msg = "la deadline est dépassée"
 		return
 	}
@@ -72,12 +73,12 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 	// Vérification de l'AgentID
 	has_voted, exists := rba.voter_ids[vote.AgentID]
 	if !exists {
-		resp.StatusCode = 400
+		resp.StatusCode = http.StatusBadRequest
 		resp.Msg = "bad request, le voteur n'est pas sur la liste"
 		return
 	}
 	if has_voted {
-		resp.StatusCode = 403
+		resp.StatusCode = http.StatusForbidden
 		resp.Msg = "vote déjà effectué"
 		return
 	}
@@ -93,7 +94,7 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 	}
 
 	if (comsoc.CheckProfile(prefs, alts) != nil) || (len(alts) != len(prefs)) { // TODO : vérifier si la 2ème condition doit être intégrer cette vérification dans checkProfil()
-		resp.StatusCode = 400
+		resp.StatusCode = http.StatusBadRequest
 		resp.Msg = " [Agent " + vote.RequestVote.AgentID + "] bad request, les préférences ne sont pas conformes"
 		return
 	}
@@ -103,7 +104,7 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 		rba.options = append(rba.options, vote.Options)
 	} else if rba.rule == "approval" {
 		// si pas de seuil de préférence pour la méthode par approbation, erreur !
-		resp.StatusCode = 400
+		resp.StatusCode = http.StatusBadRequest
 		resp.Msg = "bad request, aucun seuil de préférence saisi"
 		return
 	}
@@ -112,7 +113,7 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 	rba.profile = append(rba.profile, prefs)
 
 	rba.voter_ids[vote.AgentID] = true // on indique que l'agent a voté
-	resp.StatusCode = 200
+	resp.StatusCode = http.StatusOK
 	resp.Msg = "vote pris en compte"
 
 	/********DEBUG********/
@@ -149,7 +150,7 @@ func (rsa *RestBallotAgent) Result() (resp rad_t.RequestVoteBallot) {
 	defer rsa.Unlock()
 	// Vérification de la deadline
 	if rsa.deadline > time.Now().Format(time.RFC3339) {
-		resp.StatusCode = 425
+		resp.StatusCode = http.StatusTooEarly
 		resp.Msg = "too early"
 		return
 	}
@@ -180,7 +181,7 @@ func (rsa *RestBallotAgent) Result() (resp rad_t.RequestVoteBallot) {
 
 
 	if err == nil {
-		resp.StatusCode = 200
+		resp.StatusCode = http.StatusOK
 		if len(ranking) > 1 {
 			resp.Ranking = make([]int, rsa.nb_alts)
 			for i, _ := range ranking {
@@ -192,7 +193,7 @@ func (rsa *RestBallotAgent) Result() (resp rad_t.RequestVoteBallot) {
 		}
 
 	} else {
-		resp.StatusCode = 500
+		resp.StatusCode = http.StatusInternalServerError
 		resp.Msg = "internal server error, " + err.Error()
 	}
 

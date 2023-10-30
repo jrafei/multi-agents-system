@@ -92,6 +92,17 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	fmt.Println(req)
 	fmt.Println("-----------------")
 
+	// Vérification de la méthode de vote
+	switch req.Rule {
+	case "majority", "borda", "approval", "stv", "copeland", "condorcet":
+		break
+	default:
+		w.WriteHeader(http.StatusNotImplemented)
+		msg := fmt.Sprintf("Unknown rule (%s)", req.Rule)
+		w.Write([]byte(msg))
+		return
+	}
+
 	// Vérification des paramètres
 	if req.Nb_alts < 0 {
 
@@ -116,16 +127,6 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Vérification de la méthode de vote
-	switch req.Rule {
-	case "majority", "borda", "approval", "stv", "copeland", "condorcet":
-		break
-	default:
-		w.WriteHeader(http.StatusBadRequest)
-		msg := fmt.Sprintf("Unknown rule (%s)", req.Rule)
-		w.Write([]byte(msg))
-		return
-	}
 
 	// Vérification du tiebreak : verifie si toutes les alternatives apparaissent dans la liste tiebreak
 
@@ -154,6 +155,8 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	// Lancement de la ballot par une go routine (ajout)
 	go ballot.Start(ballot_ch)
 
+
+	// Initialisation de la réponse
 	resp.Ballot_id = ballot_id
 	w.WriteHeader(http.StatusCreated)
 	serial, _ := json.Marshal(resp)
@@ -187,7 +190,6 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 		req, err := rsa.decodeRequestVote(r)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprint(w, err.Error())
 			return
 		}
 
@@ -204,13 +206,13 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 		// Vérification du BallotID
 		ballot_chan, exists := rsa.ballots[req.BallotID]
 		if !exists {
-			if action == "vote" {
+			if action == "vote" { //TODO : à vérifier
 				w.WriteHeader(http.StatusBadRequest)
 			} else if action == "result" {
-				w.WriteHeader(404)
+				w.WriteHeader(http.StatusNotFound)
+			}else {
+				w.WriteHeader(http.StatusBadRequest)
 			}
-			msg := fmt.Sprintf("not found, the ballot '%s' doesn't exist", req.BallotID)
-			w.Write([]byte(msg))
 			return
 		}
 
@@ -241,8 +243,6 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 		switch action {
 		case "vote":
 			w.WriteHeader(resp.StatusCode)
-			msg := resp.Msg
-			w.Write([]byte(msg))
 		case "result":
 			if resp.StatusCode == 200 {
 				w.WriteHeader(http.StatusOK)
@@ -251,8 +251,6 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 				w.Write([]byte(serial))
 			} else {
 				w.WriteHeader(resp.StatusCode)
-				msg := resp.Msg
-				w.Write([]byte(msg))
 			}
 
 		}

@@ -2,6 +2,7 @@ package agt
 
 import (
 	coms "ia04/comsoc"
+	"net/http"
 )
 
 // Requête pour la création d'un agent
@@ -31,9 +32,11 @@ type RequestVoteBallot struct {
 	Ranking      []int  //renseigné par le ballot
 }
 
-// Requête de réponse générale
+// Requête de réponse générale 
 type Response struct {
+	Header *http.Header
 	Ballot_id string `json:"ballot-id,omitempty"`
 	Winner    int    `json:"winner,omitempty"`
 	Ranking   []int  `json:"ranking,omitempty"`
+	Status int 		 `json:"status,omitempty"`
 }

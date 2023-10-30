@@ -26,20 +26,21 @@ func NewRestVoterAgent(id string, n string, p []coms.Alternative, u string, op [
 	return &RestVoterAgent{ag, u, op}
 }
 
-// traduire le résultat en chaine de caractère
-func (rva *RestVoterAgent) treatResponseVote(r *http.Response) string {
+
+// Décode une réponse
+// Renvoie la structure Response, la réponse du server au client
+func (*RestVoterAgent) decodeResponse(r *http.Response) (rep rad_t.Response, err error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
-	var resp string
-	json.Unmarshal(buf.Bytes(), &resp) //decode la reponse et le met dans resp
-
-	return resp
+	err = json.Unmarshal(buf.Bytes(), &rep)
+	rep.Status = r.StatusCode
+	return
 }
 
 /*
 renvoie la réponse du serveur ou une erreur
 */
-func (rva *RestVoterAgent) doRequestVoter(ballotID string) (res string, err error) {
+func (rva *RestVoterAgent) doRequestVoter(ballotID string) (res rad_t.Response, err error) {
 	// creation de requete de vote
 	req := agt.RequestVote{
 		AgentID:     string(rva.agt.ID),
@@ -47,7 +48,7 @@ func (rva *RestVoterAgent) doRequestVoter(ballotID string) (res string, err erro
 		Preferences: rva.agt.Prefs,
 		Options:     rva.opts,
 	}
-
+	
 	// sérialisation de la requête
 	url := rva.url_server + "/vote"
 	data, _ := json.Marshal(req) // code la requete vote en liste de bit
@@ -59,22 +60,23 @@ func (rva *RestVoterAgent) doRequestVoter(ballotID string) (res string, err erro
 
 	// traitement de la réponse
 	if err != nil {
+		
 		// A REVOIR [TODO]
-		return "",err
+		//return "",err
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
 		return
 	}
-	res = rva.treatResponseVote(resp)
 
+	res,err = rva.decodeResponse(resp)
 	return
 }
 
 
 
-func (rva *RestVoterAgent) DoRequestResult(ballotID string) (res string, err error) {
+func (rva *RestVoterAgent) DoRequestResult(ballotID string) (res rad_t.Response, err error) {
 	// creation de requete de resultat
 	req := rad_t.RequestVote{
 		BallotID: "scrutin1",
@@ -87,25 +89,20 @@ func (rva *RestVoterAgent) DoRequestResult(ballotID string) (res string, err err
 	// envoi de la requête au url
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
 
-
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
 		return
 	}
-	res = rva.treatResponseVote(resp)
-
+	res,err = rva.decodeResponse(resp)
 	return
 }
 
 // TO DO : à vérifier si on mets les ballotID
 func (rva *RestVoterAgent) Start(ballotID string) {
 	log.Printf("démarrage de %s", rva.agt.ID)
-	_, err := rva.doRequestVoter(ballotID)
-
-	if err != nil {
-		// log.Fatal(rva.agt.ID, "error:", err.Error())
-		log.Println(rva.agt.ID, "error:", err.Error())
-	} else {
-		log.Printf("[%s] Reponse de server au client : Vote enregistree ! \n", rva.agt.ID)
+	resp, _ := rva.doRequestVoter(ballotID)
+	
+	if resp.Status == http.StatusOK{
+		log.Print("Vote enregistré !")
 	}
 }

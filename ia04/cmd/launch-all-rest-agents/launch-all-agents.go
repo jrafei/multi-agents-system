@@ -7,6 +7,8 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	rad_t "ia04/agt"
@@ -114,10 +116,18 @@ func main() {
 		// Récupération du résultat du scrutin
 		if time.Now().Format(time.RFC3339) > deadline {
 			resp_s,err := votersAgts[rand.Intn(nVoters)].DoRequestResult("scrutin1")
-			if err!=nil{
-				// TODO
+			if err != nil {
+				log.Println("[CLIENT] An error occured : " + err.Error())
+			}
+			if resp_s.Status != http.StatusOK{
+				log.Println(http.StatusText(resp_s.Status))
+				
 			}else {
-				log.Printf("[%s] Reponse de server au client : %s","scrutin1" ,resp_s)
+				ranking := make([]string,len(resp_s.Ranking))
+				for i,v := range resp_s.Ranking{
+					ranking[i] = strconv.Itoa(v)
+				}
+				log.Println("[CLIENT] Client received (" + strconv.Itoa(resp_s.Status) + ") : " + "\nWinner : " +  strconv.Itoa(resp_s.Winner) + "\nRanking : " + strings.Join(ranking, ","))
 			}
 			return
 
