@@ -92,7 +92,7 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 		prefs[i] = comsoc.Alternative(vote.Preferences[i])
 	}
 
-	if comsoc.CheckProfile(prefs, alts) != nil {
+	if (comsoc.CheckProfile(prefs, alts) != nil) || (len(alts) != len(prefs)) { // TODO : vérifier si la 2ème condition doit être intégrer cette vérification dans checkProfil()
 		resp.StatusCode = 400
 		resp.Msg = " [Agent " + vote.RequestVote.AgentID + "] bad request, les préférences ne sont pas conformes"
 		return
