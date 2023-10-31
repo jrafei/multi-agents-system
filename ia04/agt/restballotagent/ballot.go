@@ -24,20 +24,42 @@ type RestBallotAgent struct {
 	options     [][]int
 }
 
-func NewRestBallotAgent(i string, ru string, d string, vot_ids []string, alts int, tieb []com.Alternative, ch chan rad_t.RequestVoteBallot) *RestBallotAgent {
+/*
+======================================
+
+	  @brief :
+	  'Constructeur de la classe.'
+	  @params :
+		- 'id' : identifiant unique du ballot
+		- 'rule' : méthode de vote
+		- 'deadline' : date de fin de prise en compte des votes
+		- 'voters_list' : liste des identifiants des voteurs
+		- 'nb_alts' : nombre d alternatives pour le vote
+		- 'tieb' : liste du classement des alternatives pour TieBreak
+		- 'server_chan' : channel pour échange ballot-server
+	  @returned :
+	    -  Un pointeur sur le ballot créé.
+
+======================================
+*/
+func NewRestBallotAgent(id string, rule string, deadline string, voters_list []string, nb_alts int, tieb []com.Alternative, server_chan chan rad_t.RequestVoteBallot) *RestBallotAgent {
 	voters := make(map[string]bool, 0)
-	for _, id := range vot_ids {
+	for _, id := range voters_list {
 		// On signale qu'aucun voteur n'a encore voté
 		voters[id] = false
 	}
-	return &RestBallotAgent{id: i, rule: ru, deadline: d, voter_ids: voters, nb_alts: alts, tiebreak: tieb, server_chan: ch, profile: make(com.Profile, 0), options: make([][]int, 0)}
+	return &RestBallotAgent{id: id, rule: rule, deadline: deadline, voter_ids: voters, nb_alts: nb_alts, tiebreak: tieb, server_chan: server_chan, profile: make(com.Profile, 0), options: make([][]int, 0)}
 }
 
 /*
-traite les requetes que le channel 'server_chan' a entendu
+======================================
+
+	@brief:
+	'Procédure de mise en fonction du ballot. Elle écoute et traite les requêtes échangées avec le serveur.'
+
+======================================
 */
-func (rsa *RestBallotAgent) Start(chan rad_t.RequestVoteBallot) {
-	// si le channel reçoit une demande, on lance la méthode associée
+func (rsa *RestBallotAgent) Start() {
 	for {
 		var resp rad_t.RequestVoteBallot
 		req := <-rsa.server_chan
@@ -53,12 +75,20 @@ func (rsa *RestBallotAgent) Start(chan rad_t.RequestVoteBallot) {
 		}
 		// Transmission de la réponse au serveur
 		rsa.server_chan <- resp
-
 	}
 }
 
 /*
-ajout d'un vote s'il est valide
+======================================
+
+	  @brief :
+	  'Méthode pour la prise en compte d un vote.'
+	  @params :
+		- 'vote' : requête entrante de type RequestVoteBallot
+	  @returned :
+	    - 'resp' : requête sortante (réponse) de type RequestVoteBallot
+
+======================================
 */
 func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.RequestVoteBallot) {
 	rba.Lock()
@@ -144,7 +174,15 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 }
 
 /*
- */
+======================================
+
+	@brief :
+	'Méthode pour l obtention du résultat du vote'
+	@returned :
+	   - 'resp' : requête sortante (réponse) de type RequestVoteBallot
+
+======================================
+*/
 func (rsa *RestBallotAgent) Result() (resp rad_t.RequestVoteBallot) {
 	rsa.Lock()
 	defer rsa.Unlock()
@@ -175,10 +213,9 @@ func (rsa *RestBallotAgent) Result() (resp rad_t.RequestVoteBallot) {
 	case "condorcet":
 		ranking, err = comsoc.CondorcetWinner(rsa.profile)
 		fmt.Println(ranking, err)
-	default :
+	default:
 		err = errors.New("unknown rule")
 	}
-
 
 	if err == nil {
 		resp.StatusCode = http.StatusOK

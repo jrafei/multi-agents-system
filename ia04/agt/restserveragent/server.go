@@ -23,16 +23,40 @@ type RestServerAgent struct {
 	id      string
 	addr    string
 	ballots map[string]chan rad_t.RequestVoteBallot // associe ballot-id et chan associé pour communiquer avec le serveur
-	// channel chan rad_t.RequestVoteBallot            //Sert à quoi ???
 }
 
+/*
+======================================
+
+	  @brief :
+	  'Constructeur de la classe.'
+	  @params :
+		- 'addr' : url/port du serveur
+	  @returned :
+	    -  Un pointeur sur le serveur créé.
+
+======================================
+*/
 func NewRestServerAgent(addr string) *RestServerAgent {
 	// return &RestServerAgent{id: addr, addr: addr, ballots: make(map[string]chan rad_t.RequestVoteBallot), channel: make(chan rad_t.RequestVoteBallot)}
 	return &RestServerAgent{id: addr, addr: addr, ballots: make(map[string]chan rad_t.RequestVoteBallot)}
 
 }
 
-// Test de la méthode
+/*
+======================================
+
+	  @brief :
+	  'Méthode de vérification de la bon type de requete http attendu (GET,POST...)'
+	  @params :
+		- 'method' : type de requete attendu
+		- 'w' : http ResponseWriter pour réponse
+		- 'r' : requete http à vérifier
+	  @returned :
+	    - booléen
+
+======================================
+*/
 func (rsa *RestServerAgent) checkMethod(method string, w http.ResponseWriter, r *http.Request) bool {
 	if r.Method != method {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -42,8 +66,19 @@ func (rsa *RestServerAgent) checkMethod(method string, w http.ResponseWriter, r 
 	return true
 }
 
-// Décode une requête de creation d'un ballot
-// Renvoir la structure RequestBallot contenant les infos envoyé par le client et une erreur si existe
+/*
+======================================
+
+	  @brief :
+	  'Méthode pour décodage une requête de création de ballot '
+	  @params :
+		- 'r' : requete http contenant les caractéristiques du ballot (binaire)
+	  @returned :
+	    - 'req' : structure RequestVote contenant les informations traduites envoyées par le client
+		- 'err' : variable d erreur
+
+======================================
+*/
 func (*RestServerAgent) decodeRequestBallot(r *http.Request) (req rad_t.RequestBallot, err error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
@@ -51,8 +86,19 @@ func (*RestServerAgent) decodeRequestBallot(r *http.Request) (req rad_t.RequestB
 	return
 }
 
-// Décode une requête de proposition de vote
-// Renvoie la structure RequestVote contenant les informations envoyé par le client et une erreur si existe
+/*
+======================================
+
+	  @brief :
+	  'Méthode pour décodage une requête de proposition de vote '
+	  @params :
+		- 'r' : requete http contenant les caractéristiques du vote (binaire)
+	  @returned :
+	    - 'req' : structure RequestVote contenant les informations traduites envoyées par le client
+		- 'err' : variable d erreur
+
+======================================
+*/
 func (*RestServerAgent) decodeRequestVote(r *http.Request) (req rad_t.RequestVote, err error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
@@ -60,13 +106,19 @@ func (*RestServerAgent) decodeRequestVote(r *http.Request) (req rad_t.RequestVot
 	return
 }
 
-// Handler pour la création d'un ballot
-// prend en argument :
-// 1 - http ResponseWriter
-// 2 - la requete http contenant les infos de ballot à créer codé par Marshal
-// création du ballot si les infos sont conformes, et lance le ballot crée
+/*
+======================================
+
+	  @brief :
+	  'Handler de création d un ballot.'
+	  @params :
+		- 'w' : http ResponseWriter pour réponse
+		- 'r' : requete http contenant les caractéristiques du ballot
+
+======================================
+*/
 func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(time.Now().Format(time.RFC3339))
+
 	// On lock le système pour ne pas avoir de conflit (TODO : à modifier peut-être)
 	rsa.Lock()
 	defer rsa.Unlock()
@@ -125,7 +177,6 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-
 	// Vérification du tiebreak : verifie si toutes les alternatives apparaissent dans la liste tiebreak
 
 	tieb := make([]comsoc.Alternative, len(req.Tiebreak))
@@ -151,8 +202,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	ballot := rad.NewRestBallotAgent(ballot_id, req.Rule, req.Deadline, req.Voters, req.Nb_alts, tieb, ballot_ch)
 
 	// Lancement de la ballot par une go routine (ajout)
-	go ballot.Start(ballot_ch)
-
+	go ballot.Start()
 
 	// Initialisation de la réponse
 	resp.Ballot_id = ballot_id
@@ -170,8 +220,20 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	/*********************/
 }
 
-// Utilisation d'un wrapper pour ajouter le paramètre action (type d'action à effectuer pour le ballot, ex : vote, result)
-// Permet d'éviter la duplication de code inutile aux deux types d'action
+/*
+======================================
+
+	  @brief :
+	  'Méthode de déclenchement de l action souhaitée par le client.'
+	  Utilisation d un wrapper pour ajouter le paramètre action.
+	  Permet d éviter la duplication de code inutile aux différents types d action.
+	  @params :
+		- 'action' : Le procédé souhaité
+	  @returned :
+	    - fonction associée à l action désirée
+
+======================================
+*/
 func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -197,7 +259,6 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 		/********DEBUG********/
 		fmt.Printf("[%s] Request /%s from client to server :\n", req.AgentID, action)
 		fmt.Println("RequestVote : ", req)
-		
 
 		// Vérification du BallotID
 		ballot_chan, exists := rsa.ballots[req.BallotID]
@@ -206,7 +267,7 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 				w.WriteHeader(http.StatusBadRequest)
 			} else if action == "result" {
 				w.WriteHeader(http.StatusNotFound)
-			}else {
+			} else {
 				w.WriteHeader(http.StatusBadRequest)
 			}
 			return
@@ -251,6 +312,14 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 	}
 }
 
+/*
+======================================
+
+	@brief :
+	'Procédure de mise en fonction du serveur. Elle crée et écoute les requêtes http entrantes.'
+
+======================================
+*/
 func (rsa *RestServerAgent) Start() {
 	// création du multiplexer
 	mux := http.NewServeMux()
