@@ -118,7 +118,7 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 
 	/********DEBUG********/
 	fmt.Println("-----------------")
-	fmt.Printf("[DBG] [%s] Updated ballot after /vote : \n", vote.AgentID)
+	fmt.Printf("[%s] Updated ballot after /vote : \n", vote.AgentID)
 	fmt.Println(rba.id)
 	fmt.Println(rba.deadline)
 	fmt.Println(rba.nb_alts)
@@ -130,7 +130,7 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 
 	/********DEBUG********/
 	fmt.Println("-----------------")
-	fmt.Printf("[DBG] [%s] Response /vote from ballot to server : \n", vote.AgentID)
+	fmt.Printf("[%s] Response /vote from ballot to server : \n", vote.AgentID)
 	fmt.Println(rba.id)
 	fmt.Println(rba.deadline)
 	fmt.Println(rba.nb_alts)

@@ -7,10 +7,13 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+
 	"strconv"
 	"strings"
+
 	"time"
 
+	"ia04/agt"
 	rad_t "ia04/agt"
 	restserveragent "ia04/agt/restserveragent"
 	restvoteragent "ia04/agt/restvoteragent"
@@ -32,7 +35,9 @@ func main() {
 	deadline := time.Now().Add(time.Second*10).Format(time.RFC3339)
 	req := rad_t.RequestBallot{
 		Rule:     "majority",
+
 		Deadline: deadline,			// On implémente une deadline à + 10 secondes
+
 		Voters:   []string{"ag_id01", "ag_id02", "ag_id03"},
 		Nb_alts:  5,
 		Tiebreak: []int{4, 2, 3, 5, 1},
@@ -43,6 +48,7 @@ func main() {
 	data, _ := json.Marshal(req) // data de type []octet (json encoding) , traduire la demande en liste de bit (encode)
 
 	// envoi de la requête
+
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data)) //resp : *http.Response , une requete sera envoyé au serveur
 	/*
 	if err != nil {
@@ -63,23 +69,16 @@ func main() {
 		return
 	}
 
-	//log.Println("response : ", resp)
-
-	// Création de plusieurs RequestVote et envoyer au serveur
-
-	// le serveur va renvoyer la requestReponse
-	//affichage de reponse du serveur
-
-	log.Println("démarrage des voters...")
+	log.Println("[main] démarrage des voters...")
 	votersAgts := make([]restvoteragent.RestVoterAgent, 0, nVoters)
 	for i := 0; i < nVoters; i++ {
 		id := fmt.Sprintf("ag_id%02d", i+1)
-		name := fmt.Sprintf("Voter02d", i+1)
+		name := fmt.Sprintf("Voter%02d", i+1)
 
 		var prefs []coms.Alternative
 		generated := make(map[int]bool)
 		for len(prefs) < nAlts {
-			num := rand.Intn(nAlts) // Vous pouvez ajuster la plage selon vos besoins
+			num := rand.Intn(nAlts)
 
 			// Vérifie si l'entier généré est déjà dans la carte
 			if !generated[num] {
@@ -102,10 +101,9 @@ func main() {
 
 	//log.Println(votersAgts)
 
+
 	/*
 	for _, agt := range votersAgts {
-		// attention, obligation de passer par cette lambda pour faire capturer la valeur de l'itération par la goroutine
-		//for est bcp plus rapide de go , si on met dans for seulement la ligne 40 , on applique le start pour l'agent 99 seulement
 		func(agt restvoteragent.RestVoterAgent) {
 			go agt.Start("scrutin1")
 		}(agt)
@@ -133,4 +131,3 @@ func main() {
 
 		}
 	}
-}

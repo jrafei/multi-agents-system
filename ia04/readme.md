@@ -5,4 +5,6 @@ Commentaires Jana :
 - Preferences []int dans la definition de RequestVote a été modifié à []Alternative
 
 Nouveaux commentaires :
-j'ai ajouter un lock dans la fonction Vote et la fonction Result du ballot.go (A vérifier)
+- j'ai ajouter un lock dans la fonction Vote et la fonction Result du ballot.go (A vérifier)
+- dans le main du launch-all-agents.go , l'execution s'arrete au moment où une erreur est survenu ! 
+- A revoir la demande du resultat de scrutin dans main

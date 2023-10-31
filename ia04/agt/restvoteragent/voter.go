@@ -100,6 +100,7 @@ func (rva *RestVoterAgent) DoRequestResult(ballotID string) (res rad_t.Response,
 // TO DO : à vérifier si on mets les ballotID
 func (rva *RestVoterAgent) Start(ballotID string) {
 	log.Printf("démarrage de %s", rva.agt.ID)
+
 	resp, _ := rva.doRequestVoter(ballotID)
 	
 	if resp.Status == http.StatusOK{
