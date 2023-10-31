@@ -10,10 +10,7 @@ import (
 
 	"strconv"
 	"strings"
-
 	"time"
-
-	"ia04/agt"
 	rad_t "ia04/agt"
 	restserveragent "ia04/agt/restserveragent"
 	restvoteragent "ia04/agt/restvoteragent"
@@ -131,3 +128,4 @@ func main() {
 
 		}
 	}
+}
