@@ -1,9 +1,5 @@
 package comsoc
 
-import(
-	"fmt"
-)
-
 
 func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Alternative, error)) func(Profile) ([]Alternative, error) {
 	/* Idée : 

@@ -2,7 +2,6 @@ package comsoc
 
 import (
 	"errors"
-	"fmt"
 )
 
 func STV_SWF(p Profile, orderedAlts []Alternative) (count Count, err error) {
