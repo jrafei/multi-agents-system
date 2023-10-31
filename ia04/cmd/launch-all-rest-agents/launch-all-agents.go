@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	rad_t "ia04/agt"
-	restserveragent "ia04/agt/restserveragent"
-	agent "ia04/agt/restvoteragent"
-	coms "ia04/comsoc"
 	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	rsa "ia04/agt/restserveragent"
+	agent "ia04/agt/restvoteragent"
+	utils "ia04/agt/utils"
+	comsoc "ia04/comsoc"
 )
 
 func main() {
@@ -22,14 +23,14 @@ func main() {
 	const port = ":8080"
 	const url_server = "http://localhost:8080"
 
-	server := restserveragent.NewRestServerAgent(port)
+	server := rsa.NewRestServerAgent(port)
 
 	log.Println("démarrage du serveur...")
 	go server.Start()
 
 	//Créer une requete RequestBallot et envoyer vers le serveur
 	deadline := time.Now().Add(time.Second * 10).Format(time.RFC3339)
-	req := rad_t.RequestBallot{
+	req := utils.RequestBallot{
 		Rule: "majority",
 
 		Deadline: deadline, // On implémente une deadline à + 10 secondes
@@ -71,7 +72,7 @@ func main() {
 		id := fmt.Sprintf("ag_id%02d", i+1)
 		name := fmt.Sprintf("Voter%02d", i+1)
 
-		var prefs []coms.Alternative
+		var prefs []comsoc.Alternative
 		generated := make(map[int]bool)
 		for len(prefs) < nAlts {
 			num := rand.Intn(nAlts)
@@ -79,7 +80,7 @@ func main() {
 			// Vérifie si l'entier généré est déjà dans la carte
 			if !generated[num] {
 				generated[num] = true
-				prefs = append(prefs, coms.Alternative(num+1))
+				prefs = append(prefs, comsoc.Alternative(num+1))
 			}
 		}
 

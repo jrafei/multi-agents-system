@@ -3,12 +3,12 @@ package restserveragent
 import (
 	"errors"
 	"fmt"
-	rad_t "ia04/agt"
-	"ia04/comsoc"
-	com "ia04/comsoc"
 	"net/http"
 	"sync"
 	"time"
+
+	utils "ia04/agt/utils"
+	comsoc "ia04/comsoc"
 )
 
 type RestBallotAgent struct {
@@ -18,9 +18,9 @@ type RestBallotAgent struct {
 	deadline    string
 	voter_ids   map[string]bool // Le booléen permet de savoir si l'agent a déjà voté
 	nb_alts     int
-	tiebreak    []com.Alternative
-	server_chan chan rad_t.RequestVoteBallot // canal de communication entre le scrutin et le serveur (requetes de type vote ou result)
-	profile     com.Profile
+	tiebreak    []comsoc.Alternative
+	server_chan chan utils.RequestVoteBallot // canal de communication entre le scrutin et le serveur (requetes de type vote ou result)
+	profile     comsoc.Profile
 	options     [][]int
 }
 
@@ -42,13 +42,13 @@ type RestBallotAgent struct {
 
 ======================================
 */
-func NewRestBallotAgent(id string, rule string, deadline string, voters_list []string, nb_alts int, tieb []com.Alternative, server_chan chan rad_t.RequestVoteBallot) *RestBallotAgent {
+func NewRestBallotAgent(id string, rule string, deadline string, voters_list []string, nb_alts int, tieb []comsoc.Alternative, server_chan chan utils.RequestVoteBallot) *RestBallotAgent {
 	voters := make(map[string]bool, 0)
 	for _, id := range voters_list {
 		// On signale qu'aucun voteur n'a encore voté
 		voters[id] = false
 	}
-	return &RestBallotAgent{id: id, rule: rule, deadline: deadline, voter_ids: voters, nb_alts: nb_alts, tiebreak: tieb, server_chan: server_chan, profile: make(com.Profile, 0), options: make([][]int, 0)}
+	return &RestBallotAgent{id: id, rule: rule, deadline: deadline, voter_ids: voters, nb_alts: nb_alts, tiebreak: tieb, server_chan: server_chan, profile: make(comsoc.Profile, 0), options: make([][]int, 0)}
 }
 
 /*
@@ -61,7 +61,7 @@ func NewRestBallotAgent(id string, rule string, deadline string, voters_list []s
 */
 func (rsa *RestBallotAgent) Start() {
 	for {
-		var resp rad_t.RequestVoteBallot
+		var resp utils.RequestVoteBallot
 		req := <-rsa.server_chan
 		// Selection de l'action à effectuer
 		switch req.Action {
@@ -90,7 +90,7 @@ func (rsa *RestBallotAgent) Start() {
 
 ======================================
 */
-func (rba *RestBallotAgent) vote(vote rad_t.RequestVoteBallot) (resp rad_t.RequestVoteBallot) {
+func (rba *RestBallotAgent) vote(vote utils.RequestVoteBallot) (resp utils.RequestVoteBallot) {
 	rba.Lock()
 	defer rba.Unlock()
 	// Vérification de la deadline
@@ -183,7 +183,7 @@ func (rba *RestBallotAgent) vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 
 ======================================
 */
-func (rsa *RestBallotAgent) result() (resp rad_t.RequestVoteBallot) {
+func (rsa *RestBallotAgent) result() (resp utils.RequestVoteBallot) {
 	rsa.Lock()
 	defer rsa.Unlock()
 	// Vérification de la deadline
@@ -196,20 +196,20 @@ func (rsa *RestBallotAgent) result() (resp rad_t.RequestVoteBallot) {
 	var err error
 	switch rsa.rule {
 	case "majority":
-		ranking, err = comsoc.SWFFactory(com.MajoritySWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
+		ranking, err = comsoc.SWFFactory(comsoc.MajoritySWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
 	case "borda":
-		ranking, err = comsoc.SWFFactory(com.BordaSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
+		ranking, err = comsoc.SWFFactory(comsoc.BordaSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
 	case "approval":
 		// récupération des seuils pour le vote
 		thresholds := make([]int, len(rsa.voter_ids))
 		for i, _ := range rsa.options {
 			thresholds[i] = rsa.options[i][0] // On part du principe que c'est la première valeur
 		}
-		ranking, err = comsoc.SWFFactoryOptions[int](com.ApprovalSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile, thresholds)
+		ranking, err = comsoc.SWFFactoryOptions[int](comsoc.ApprovalSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile, thresholds)
 	case "stv":
-		ranking, err = comsoc.SWFFactoryOptions[comsoc.Alternative](com.STV_SWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile, rsa.tiebreak)
+		ranking, err = comsoc.SWFFactoryOptions[comsoc.Alternative](comsoc.STV_SWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile, rsa.tiebreak)
 	case "copeland":
-		ranking, err = comsoc.SWFFactory(com.CopelandSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
+		ranking, err = comsoc.SWFFactory(comsoc.CopelandSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
 	case "condorcet":
 		ranking, err = comsoc.CondorcetWinner(rsa.profile)
 		fmt.Println(ranking, err)

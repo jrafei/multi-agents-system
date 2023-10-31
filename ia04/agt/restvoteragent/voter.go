@@ -7,9 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
-	rad_t "ia04/agt"
-
-	coms "ia04/comsoc"
+	utils "ia04/agt/utils"
+	comsoc "ia04/comsoc"
 )
 
 type AgentID string
@@ -19,7 +18,7 @@ type AgentI interface {
 	DeepEqual(ag AgentI) bool
 	Clone() AgentI
 	String() string
-	Prefers(a coms.Alternative, b coms.Alternative) bool
+	Prefers(a comsoc.Alternative, b comsoc.Alternative) bool
 	Start()
 }
 
@@ -31,7 +30,7 @@ func (a *Agent) DeepEqual(ag Agent) bool {
 	return a.ID == ag.ID && a.Name == ag.Name && slicesEquality(a.Prefs, ag.Prefs)
 }
 
-func slicesEquality(a, b []coms.Alternative) bool {
+func slicesEquality(a, b []comsoc.Alternative) bool {
 	// Vérifie l'égalité de deux slices
 	if len(a) != len(b) {
 		return false
@@ -45,7 +44,7 @@ func slicesEquality(a, b []coms.Alternative) bool {
 }
 
 func (a *Agent) Clone() Agent {
-	prefs_slc := make([]coms.Alternative, len(a.Prefs))
+	prefs_slc := make([]comsoc.Alternative, len(a.Prefs))
 	for i, v := range a.Prefs {
 		prefs_slc[i] = v
 	}
@@ -74,7 +73,7 @@ func (a *Agent) String() string {
 	return infos
 }
 
-func (ag *Agent) Prefers(a coms.Alternative, b coms.Alternative) bool {
+func (ag *Agent) Prefers(a comsoc.Alternative, b comsoc.Alternative) bool {
 	for _, v := range ag.Prefs {
 		if v == a {
 			return true
@@ -88,7 +87,7 @@ func (ag *Agent) Prefers(a coms.Alternative, b coms.Alternative) bool {
 type Agent struct {
 	ID    AgentID
 	Name  string
-	Prefs []coms.Alternative
+	Prefs []comsoc.Alternative
 	Opts  []int
 }
 
@@ -107,7 +106,7 @@ type Agent struct {
 
 ======================================
 */
-func NewAgent(id string, name string, preferences []coms.Alternative, options []int) *Agent {
+func NewAgent(id string, name string, preferences []comsoc.Alternative, options []int) *Agent {
 	return &Agent{AgentID(id), name, preferences, options}
 }
 
@@ -124,17 +123,13 @@ func NewAgent(id string, name string, preferences []coms.Alternative, options []
 
 ======================================
 */
-func (*Agent) decodeResponse(r *http.Response) (rep rad_t.Response, err error) {
+func (*Agent) decodeResponse(r *http.Response) (rep utils.Response, err error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
 	err = json.Unmarshal(buf.Bytes(), &rep)
 	rep.Status = r.StatusCode
 	return
 }
-
-/*
-renvoie la réponse du serveur ou une erreur
-*/
 
 /*
 ======================================
@@ -150,9 +145,9 @@ renvoie la réponse du serveur ou une erreur
 
 ======================================
 */
-func (agt *Agent) Vote(ballotID string, url_server string) (res rad_t.Response, err error) {
+func (agt *Agent) Vote(ballotID string, url_server string) (res utils.Response, err error) {
 	// creation de requete de vote
-	req := rad_t.RequestVote{
+	req := utils.RequestVote{
 		AgentID:     string(agt.ID),
 		BallotID:    ballotID,
 		Preferences: agt.Prefs,
@@ -198,9 +193,9 @@ func (agt *Agent) Vote(ballotID string, url_server string) (res rad_t.Response, 
 
 ======================================
 */
-func (agt *Agent) GetResult(ballotID string, url_server string) (res rad_t.Response, err error) {
+func (agt *Agent) GetResult(ballotID string, url_server string) (res utils.Response, err error) {
 	// creation de requete de resultat
-	req := rad_t.RequestVote{
+	req := utils.RequestVote{
 		BallotID: "scrutin1",
 	}
 

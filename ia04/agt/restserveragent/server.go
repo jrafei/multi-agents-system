@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	rad_t "ia04/agt"
 	rad "ia04/agt/restballotagent"
+	utils "ia04/agt/utils"
 	comsoc "ia04/comsoc"
 )
 
@@ -22,7 +22,7 @@ type RestServerAgent struct {
 	sync.Mutex
 	id      string
 	addr    string
-	ballots map[string]chan rad_t.RequestVoteBallot // associe ballot-id et chan associé pour communiquer avec le serveur
+	ballots map[string]chan utils.RequestVoteBallot // associe ballot-id et chan associé pour communiquer avec le serveur
 }
 
 /*
@@ -39,7 +39,7 @@ type RestServerAgent struct {
 */
 func NewRestServerAgent(addr string) *RestServerAgent {
 	// return &RestServerAgent{id: addr, addr: addr, ballots: make(map[string]chan rad_t.RequestVoteBallot), channel: make(chan rad_t.RequestVoteBallot)}
-	return &RestServerAgent{id: addr, addr: addr, ballots: make(map[string]chan rad_t.RequestVoteBallot)}
+	return &RestServerAgent{id: addr, addr: addr, ballots: make(map[string]chan utils.RequestVoteBallot)}
 
 }
 
@@ -79,7 +79,7 @@ func (rsa *RestServerAgent) checkMethod(method string, w http.ResponseWriter, r 
 
 ======================================
 */
-func (*RestServerAgent) decodeRequestBallot(r *http.Request) (req rad_t.RequestBallot, err error) {
+func (*RestServerAgent) decodeRequestBallot(r *http.Request) (req utils.RequestBallot, err error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
 	err = json.Unmarshal(buf.Bytes(), &req)
@@ -99,7 +99,7 @@ func (*RestServerAgent) decodeRequestBallot(r *http.Request) (req rad_t.RequestB
 
 ======================================
 */
-func (*RestServerAgent) decodeRequestVote(r *http.Request) (req rad_t.RequestVote, err error) {
+func (*RestServerAgent) decodeRequestVote(r *http.Request) (req utils.RequestVote, err error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
 	err = json.Unmarshal(buf.Bytes(), &req)
@@ -137,7 +137,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// traitement de la requête
-	var resp rad_t.Response
+	var resp utils.Response
 
 	fmt.Println("Request /init_ballot :")
 	fmt.Println(req)
@@ -197,7 +197,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 
 	// création d'une ballot si tout est conforme
 	ballot_id := string("scrutin" + strconv.Itoa(len(rsa.ballots)+1))
-	ballot_ch := make(chan rad_t.RequestVoteBallot)
+	ballot_ch := make(chan utils.RequestVoteBallot)
 	rsa.ballots[ballot_id] = ballot_ch
 	ballot := rad.NewRestBallotAgent(ballot_id, req.Rule, req.Deadline, req.Voters, req.Nb_alts, tieb, ballot_ch)
 
@@ -254,7 +254,7 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 		}
 
 		// traitement de la requête
-		var resp rad_t.RequestVoteBallot
+		var resp utils.RequestVoteBallot
 
 		/********DEBUG********/
 		fmt.Printf("[%s] Request /%s from client to server :\n", req.AgentID, action)
@@ -273,7 +273,7 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 			return
 		}
 
-		vote_req := rad_t.RequestVoteBallot{RequestVote: &req, Action: action, StatusCode: 0, Msg: ""}
+		vote_req := utils.RequestVoteBallot{RequestVote: &req, Action: action, StatusCode: 0, Msg: ""}
 
 		/********DEBUG********/
 		fmt.Printf("[%s] Request /%s from server to ballot :\n", req.AgentID, action)
@@ -301,7 +301,7 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 		case "result":
 			if resp.StatusCode == 200 {
 				w.WriteHeader(http.StatusOK)
-				resp_finale := rad_t.Response{Winner: resp.Winner, Ranking: resp.Ranking}
+				resp_finale := utils.Response{Winner: resp.Winner, Ranking: resp.Ranking}
 				serial, _ := json.Marshal(resp_finale)
 				w.Write([]byte(serial))
 			} else {

@@ -1,7 +1,7 @@
 package agt
 
 import (
-	coms "ia04/comsoc"
+	comsoc "ia04/comsoc"
 )
 
 // Requête pour la création d'un agent (transfert via requête http)
@@ -15,10 +15,10 @@ type RequestBallot struct {
 
 // Requête pour la prise en compte d'un vote, et le résultat d'un scrutin (transfert via requête http)
 type RequestVote struct {
-	AgentID     string             `json:"agent-id,omitempty"`
-	BallotID    string             `json:"ballot-id"`
-	Preferences []coms.Alternative `json:"prefs,omitempty"`
-	Options     []int              `json:"options,omitempty"`
+	AgentID     string               `json:"agent-id,omitempty"`
+	BallotID    string               `json:"ballot-id"`
+	Preferences []comsoc.Alternative `json:"prefs,omitempty"`
+	Options     []int                `json:"options,omitempty"`
 }
 
 // Requête échangée entre le ballot et le serveur (requete interne)
