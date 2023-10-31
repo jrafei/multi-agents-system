@@ -22,68 +22,6 @@ type AgentI interface {
 	Start()
 }
 
-func (a *Agent) Equal(ag Agent) bool {
-	return a == &ag
-}
-
-func (a *Agent) DeepEqual(ag Agent) bool {
-	return a.ID == ag.ID && a.Name == ag.Name && slicesEquality(a.Prefs, ag.Prefs)
-}
-
-func slicesEquality(a, b []comsoc.Alternative) bool {
-	// Vérifie l'égalité de deux slices
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
-func (a *Agent) Clone() Agent {
-	prefs_slc := make([]comsoc.Alternative, len(a.Prefs))
-	for i, v := range a.Prefs {
-		prefs_slc[i] = v
-	}
-	opts_slc := make([]int, len(a.Opts))
-	for i, v := range a.Opts {
-		opts_slc[i] = v
-	}
-	return Agent{a.ID, a.Name, prefs_slc, opts_slc}
-}
-
-func (a *Agent) String() string {
-	var infos string
-	infos = "--------------------------\n"
-	infos += "Agent ID : " + string(a.ID) + "\n"
-	infos += "Agent name : " + a.Name + "\n"
-	infos += "Agent preferences : \n"
-	for i, v := range a.Prefs {
-		infos += strconv.Itoa(i) + "." + strconv.Itoa(int(v)) + "\n"
-	}
-	infos += "Agent options : \n"
-	for i, v := range a.Opts {
-		infos += strconv.Itoa(i) + "." + strconv.Itoa(int(v)) + "\n"
-	}
-
-	infos += "-------------------------"
-	return infos
-}
-
-func (ag *Agent) Prefers(a comsoc.Alternative, b comsoc.Alternative) bool {
-	for _, v := range ag.Prefs {
-		if v == a {
-			return true
-		} else if v == b {
-			return false
-		}
-	}
-	return false // Par défaut, à vérifier
-}
-
 type Agent struct {
 	ID    AgentID
 	Name  string
@@ -213,3 +151,68 @@ func (agt *Agent) GetResult(ballotID string, url_server string) (res utils.Respo
 	res, err = agt.decodeResponse(resp)
 	return
 }
+
+/* =====================METHODES SUPPLEMENTAIRES=========================== */
+
+func (a *Agent) Equal(ag Agent) bool {
+	return a == &ag
+}
+
+func (a *Agent) DeepEqual(ag Agent) bool {
+	return a.ID == ag.ID && a.Name == ag.Name && slicesEquality[comsoc.Alternative](a.Prefs, ag.Prefs) && slicesEquality[int](a.Opts, ag.Opts)
+}
+
+func slicesEquality[T comparable](a, b []T) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (a *Agent) Clone() Agent {
+	prefs_slc := make([]comsoc.Alternative, len(a.Prefs))
+	for i, v := range a.Prefs {
+		prefs_slc[i] = v
+	}
+	opts_slc := make([]int, len(a.Opts))
+	for i, v := range a.Opts {
+		opts_slc[i] = v
+	}
+	return Agent{a.ID, a.Name, prefs_slc, opts_slc}
+}
+
+func (a *Agent) String() string {
+	var infos string
+	infos = "--------------------------\n"
+	infos += "Agent ID : " + string(a.ID) + "\n"
+	infos += "Agent name : " + a.Name + "\n"
+	infos += "Agent preferences : \n"
+	for i, v := range a.Prefs {
+		infos += strconv.Itoa(i) + "." + strconv.Itoa(int(v)) + "\n"
+	}
+	infos += "Agent options : \n"
+	for i, v := range a.Opts {
+		infos += strconv.Itoa(i) + "." + strconv.Itoa(v) + "\n"
+	}
+
+	infos += "-------------------------"
+	return infos
+}
+
+func (ag *Agent) Prefers(a comsoc.Alternative, b comsoc.Alternative) bool {
+	for _, v := range ag.Prefs {
+		if v == a {
+			return true
+		} else if v == b {
+			return false
+		}
+	}
+	return false
+}
+
+/* ==================================================================== */
