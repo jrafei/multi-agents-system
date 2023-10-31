@@ -17,7 +17,6 @@ func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Al
 	f_swf := func(p Profile) ([]Alternative, error) {
 		// Construction de la fonction avec application tiebreak
 		count, err := swf(p)
-		fmt.Println(count)
 		// Récupération du décompte
 		if err != nil {
 			return nil, err
@@ -79,7 +78,6 @@ func SWFFactoryOptions[T any](swf func(p Profile,options []T) (Count, error), ti
 	f_swf := func(p Profile,options []T) ([]Alternative, error) {
 		// Construction de la fonction avec application tiebreak
 		count, err := swf(p,options)
-		fmt.Println(count)
 		// Récupération du décompte
 		if err != nil {
 			return nil, err

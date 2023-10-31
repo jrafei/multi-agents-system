@@ -37,4 +37,5 @@ type Response struct {
 	Winner    int    `json:"winner,omitempty"`
 	Ranking   []int  `json:"ranking,omitempty"`
 	Status    int    `json:"status,omitempty"`
+	Info      string `json:"info_serveur,omitempty"`
 }

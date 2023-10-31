@@ -6,7 +6,6 @@ package restserveragent
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -38,9 +37,7 @@ type RestServerAgent struct {
 ======================================
 */
 func NewRestServerAgent(addr string) *RestServerAgent {
-	// return &RestServerAgent{id: addr, addr: addr, ballots: make(map[string]chan rad_t.RequestVoteBallot), channel: make(chan rad_t.RequestVoteBallot)}
 	return &RestServerAgent{id: addr, addr: addr, ballots: make(map[string]chan utils.RequestVoteBallot)}
-
 }
 
 /*
@@ -60,7 +57,9 @@ func NewRestServerAgent(addr string) *RestServerAgent {
 func (rsa *RestServerAgent) checkMethod(method string, w http.ResponseWriter, r *http.Request) bool {
 	if r.Method != method {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		fmt.Fprintf(w, "method %q not allowed", r.Method)
+		resp_finale := utils.Response{Info: "Mauvaise méthode HTTP réceptionnée."}
+		serial, _ := json.Marshal(resp_finale)
+		w.Write([]byte(serial))
 		return false
 	}
 	return true
@@ -132,15 +131,17 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	req, err := rsa.decodeRequestBallot(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, err.Error())
+		resp_finale := utils.Response{Info: "Impossible de comprendre la requête : " + err.Error()}
+		serial, _ := json.Marshal(resp_finale)
+		w.Write([]byte(serial))
 		return
 	}
 
 	// traitement de la requête
 	var resp utils.Response
 
-	fmt.Println("Request /init_ballot :")
-	fmt.Println(req)
+	// fmt.Println("Request /init_ballot :")
+	// fmt.Println(req)
 
 	// Vérification de la méthode de vote
 	switch req.Rule {
@@ -148,32 +149,30 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 		break
 	default:
 		w.WriteHeader(http.StatusNotImplemented)
-		msg := fmt.Sprintf("Unknown rule (%s)", req.Rule)
-		w.Write([]byte(msg))
+		resp_finale := utils.Response{Info: "Méthode de vote inconnue."}
+		serial, _ := json.Marshal(resp_finale)
+		w.Write([]byte(serial))
 		return
 	}
 
 	// Vérification des paramètres
 	if req.Nb_alts < 0 {
-
 		w.WriteHeader(http.StatusBadRequest)
-		msg := fmt.Sprintf("Negative number of alternatives (%d)", req.Nb_alts)
-		w.Write([]byte(msg))
+		resp_finale := utils.Response{Info: "Nombre négatif d'alternatives."}
+		serial, _ := json.Marshal(resp_finale)
+		w.Write([]byte(serial))
 		return
 	} else if len(req.Voters) <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		msg := fmt.Sprintf("Negative number of voters (%d)", len(req.Voters))
-		w.Write([]byte(msg))
-		return
-	} else if len(req.Tiebreak) != req.Nb_alts {
-		w.WriteHeader(http.StatusBadRequest)
-		msg := fmt.Sprintf("The tiebreak doesn't represent correctly the alternatives (TB : %d - #alts : %d )", len(req.Voters), req.Nb_alts)
-		w.Write([]byte(msg))
+		resp_finale := utils.Response{Info: "Nombre négatif de voteurs."}
+		serial, _ := json.Marshal(resp_finale)
+		w.Write([]byte(serial))
 		return
 	} else if req.Deadline <= time.Now().Format(time.RFC3339) {
 		w.WriteHeader(http.StatusBadRequest)
-		msg := fmt.Sprintf("The deadline has already been passed (%s)", req.Deadline)
-		w.Write([]byte(msg))
+		resp_finale := utils.Response{Info: "La deadline est déjà dépassée."}
+		serial, _ := json.Marshal(resp_finale)
+		w.Write([]byte(serial))
 		return
 	}
 
@@ -190,8 +189,9 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 
 	if comsoc.CheckProfile(tieb, alts) != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		msg := "The tiebreak doesn't correctly represent the alternatives"
-		w.Write([]byte(msg))
+		resp_finale := utils.Response{Info: "Le tiebreak ne représente pas correctement les alternatives."}
+		serial, _ := json.Marshal(resp_finale)
+		w.Write([]byte(serial))
 		return
 	}
 
@@ -206,18 +206,20 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 
 	// Initialisation de la réponse
 	resp.Ballot_id = ballot_id
+	resp.Info = "Ballot créé."
 	w.WriteHeader(http.StatusCreated)
 	serial, _ := json.Marshal(resp)
 	w.Write(serial)
 
-	/********DEBUG********/
-	fmt.Println("-----------------")
-	fmt.Println("Updated server after /init_ballot :")
-	fmt.Println(rsa.id)
-	fmt.Println(rsa.addr)
-	fmt.Println(rsa.ballots)
-	fmt.Println("-----------------")
-	/*********************/
+	// /********DEBUG********/
+	// fmt.Println("-----------------")
+	// fmt.Println("Updated server after /init_ballot :")
+	// fmt.Println(rsa.id)
+	// fmt.Println(rsa.addr)
+	// fmt.Println(rsa.ballots)
+	// fmt.Println("-----------------")
+	// /*********************/
+
 }
 
 /*
@@ -250,15 +252,18 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 		req, err := rsa.decodeRequestVote(r)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
+			resp_finale := utils.Response{Info: "Impossible de comprendre la requête : " + err.Error()}
+			serial, _ := json.Marshal(resp_finale)
+			w.Write([]byte(serial))
 			return
 		}
 
 		// traitement de la requête
 		var resp utils.RequestVoteBallot
 
-		/********DEBUG********/
-		fmt.Printf("[%s] Request /%s from client to server :\n", req.AgentID, action)
-		fmt.Println("RequestVote : ", req)
+		// /********DEBUG********/
+		// fmt.Printf("[%s] Request /%s from client to server :\n", req.AgentID, action)
+		// fmt.Println("RequestVote : ", req)
 
 		// Vérification du BallotID
 		ballot_chan, exists := rsa.ballots[req.BallotID]
@@ -270,42 +275,51 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 			} else {
 				w.WriteHeader(http.StatusBadRequest)
 			}
+			resp_finale := utils.Response{Info: "Le ballotID n'est pas reconnu."}
+			serial, _ := json.Marshal(resp_finale)
+			w.Write([]byte(serial))
 			return
 		}
 
 		vote_req := utils.RequestVoteBallot{RequestVote: &req, Action: action, StatusCode: 0, Msg: ""}
 
-		/********DEBUG********/
-		fmt.Printf("[%s] Request /%s from server to ballot :\n", req.AgentID, action)
-		fmt.Println("RequestVoteBallot : ", vote_req)
-		/*********************/
+		// /********DEBUG********/
+		// fmt.Printf("[%s] Request /%s from server to ballot :\n", req.AgentID, action)
+		// fmt.Println("RequestVoteBallot : ", vote_req)
+		// /*********************/
 
 		// Transmission de la requête au ballot correspondant
 		ballot_chan <- vote_req
 		// Attente de la response du ballot
 		resp = <-ballot_chan
 
-		/********DEBUG********/
-		fmt.Println("Reponse from server to client : ")
-		fmt.Printf("[%s] Action :%s \n", req.AgentID, resp.Action)
-		fmt.Printf("[%s] Status Code : %d \n", req.AgentID, resp.StatusCode)
-		fmt.Printf("[%s] Msg : %s \n", req.AgentID, resp.Msg)
-		fmt.Printf("[%s] Winner : %d\n", req.AgentID, resp.Winner)
-		fmt.Printf("[%s] Ranking : %d \n", req.AgentID, resp.Ranking)
-		/*********************/
+		// /********DEBUG********/
+		// fmt.Println("Reponse from server to client : ")
+		// fmt.Printf("[%s] Action :%s \n", req.AgentID, resp.Action)
+		// fmt.Printf("[%s] Status Code : %d \n", req.AgentID, resp.StatusCode)
+		// fmt.Printf("[%s] Msg : %s \n", req.AgentID, resp.Msg)
+		// fmt.Printf("[%s] Winner : %d\n", req.AgentID, resp.Winner)
+		// fmt.Printf("[%s] Ranking : %d \n", req.AgentID, resp.Ranking)
+		// /*********************/
 
 		// Transmission de la réponse du ballot au client
 		switch action {
 		case "vote":
 			w.WriteHeader(resp.StatusCode)
+			resp_finale := utils.Response{Info: resp.Msg}
+			serial, _ := json.Marshal(resp_finale)
+			w.Write([]byte(serial))
 		case "result":
-			if resp.StatusCode == 200 {
+			if resp.StatusCode == http.StatusOK {
 				w.WriteHeader(http.StatusOK)
-				resp_finale := utils.Response{Winner: resp.Winner, Ranking: resp.Ranking}
+				resp_finale := utils.Response{Winner: resp.Winner, Ranking: resp.Ranking, Info: resp.Msg}
 				serial, _ := json.Marshal(resp_finale)
 				w.Write([]byte(serial))
 			} else {
 				w.WriteHeader(resp.StatusCode)
+				resp_finale := utils.Response{Info: resp.Msg}
+				serial, _ := json.Marshal(resp_finale)
+				w.Write([]byte(serial))
 			}
 
 		}

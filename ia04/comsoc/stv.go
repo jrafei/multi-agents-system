@@ -32,8 +32,6 @@ func STV_SWF(p Profile, orderedAlts []Alternative) (count Count, err error) {
 		if absoluteMajority(p, maj_count) {
 			// Si la majorité absolue est atteinte, on peut directement retourner les valeurs
 			count[maxCount(maj_count)[0]]++
-			fmt.Println("ok")
-			fmt.Println(count)
 			return count, nil
 		} else {
 

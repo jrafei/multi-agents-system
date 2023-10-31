@@ -7,8 +7,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"strconv"
-	"strings"
 	"time"
 
 	rsa "ia04/agt/restserveragent"
@@ -47,19 +45,7 @@ func main() {
 	// envoi de la requête
 
 	resp, err := http.Post(url_request, "application/json", bytes.NewBuffer(data)) //resp : *http.Response , une requete sera envoyé au serveur
-	/*
-		if err != nil {
-			log.Println("erreur 1 ...")
-			//return
-		}
-	*/
-	/*
-		if resp.StatusCode != http.StatusCreated {
-			err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
-			log.Println("erreur 2 ...", resp.StatusCode)
-			//return
-		}
-	*/
+
 	if err != nil {
 		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
 		log.Println("erreur ", resp.StatusCode)
@@ -96,35 +82,18 @@ func main() {
 		}()
 	}
 
-	//log.Println(votersAgts)
-
-	/*
-		for _, agt := range votersAgts {
-			func(agt restvoteragent.RestVoterAgent) {
-				go agt.Start("scrutin1")
-			}(agt)
-		}
-	*/
-
 	for {
 		// Récupération du résultat du scrutin
 		if time.Now().Format(time.RFC3339) > deadline {
-			resp_s, err := votersAgts[rand.Intn(nVoters)].GetResult("scrutin1", url_server)
+			winner, ranking, err := votersAgts[rand.Intn(nVoters)].GetResult("scrutin1", url_server)
 			if err != nil {
-				log.Println("[CLIENT] An error occured : " + err.Error())
-			}
-			if resp_s.Status != http.StatusOK {
-				log.Println("[CLIENT] Client received : " + http.StatusText(resp_s.Status))
-
+				fmt.Println(err)
 			} else {
-				ranking := make([]string, len(resp_s.Ranking))
-				for i, v := range resp_s.Ranking {
-					ranking[i] = strconv.Itoa(v)
-				}
-				log.Println("[CLIENT] Client received (" + strconv.Itoa(resp_s.Status) + ") : " + "\nWinner : " + strconv.Itoa(resp_s.Winner) + "\nRanking : " + strings.Join(ranking, ","))
+				fmt.Println("winner : ", winner)
+				fmt.Println("ranking : ", ranking)
 			}
-			return
 
+			return
 		}
 	}
 }

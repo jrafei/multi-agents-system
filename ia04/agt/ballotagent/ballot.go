@@ -1,8 +1,6 @@
 package restserveragent
 
 import (
-	"errors"
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -71,7 +69,7 @@ func (rsa *RestBallotAgent) Start() {
 			resp = rsa.result()
 		default:
 			resp.StatusCode = http.StatusBadRequest
-			resp.Msg = "bad request, unknown process for ballot"
+			resp.Msg = "Action inconnue."
 		}
 		// Transmission de la réponse au serveur
 		rsa.server_chan <- resp
@@ -96,7 +94,7 @@ func (rba *RestBallotAgent) vote(vote utils.RequestVoteBallot) (resp utils.Reque
 	// Vérification de la deadline
 	if rba.deadline <= time.Now().Format(time.RFC3339) {
 		resp.StatusCode = http.StatusGatewayTimeout
-		resp.Msg = "la deadline est dépassée"
+		resp.Msg = "La deadline est dépassée."
 		return
 	}
 
@@ -104,12 +102,12 @@ func (rba *RestBallotAgent) vote(vote utils.RequestVoteBallot) (resp utils.Reque
 	has_voted, exists := rba.voter_ids[vote.AgentID]
 	if !exists {
 		resp.StatusCode = http.StatusBadRequest
-		resp.Msg = "bad request, le voteur n'est pas sur la liste"
+		resp.Msg = "Le voteur n'est pas sur la liste."
 		return
 	}
 	if has_voted {
 		resp.StatusCode = http.StatusForbidden
-		resp.Msg = "vote déjà effectué"
+		resp.Msg = "Vote déjà effectué."
 		return
 	}
 
@@ -125,7 +123,7 @@ func (rba *RestBallotAgent) vote(vote utils.RequestVoteBallot) (resp utils.Reque
 
 	if (comsoc.CheckProfile(prefs, alts) != nil) || (len(alts) != len(prefs)) { // TODO : vérifier si la 2ème condition doit être intégrer cette vérification dans checkProfil()
 		resp.StatusCode = http.StatusBadRequest
-		resp.Msg = " [Agent " + vote.RequestVote.AgentID + "] bad request, les préférences ne sont pas conformes"
+		resp.Msg = " Les préférences ne sont pas conformes."
 		return
 	}
 
@@ -135,7 +133,7 @@ func (rba *RestBallotAgent) vote(vote utils.RequestVoteBallot) (resp utils.Reque
 	} else if rba.rule == "approval" {
 		// si pas de seuil de préférence pour la méthode par approbation, erreur !
 		resp.StatusCode = http.StatusBadRequest
-		resp.Msg = "bad request, aucun seuil de préférence saisi"
+		resp.Msg = "Aucun seuil de préférence saisi."
 		return
 	}
 
@@ -144,31 +142,31 @@ func (rba *RestBallotAgent) vote(vote utils.RequestVoteBallot) (resp utils.Reque
 
 	rba.voter_ids[vote.AgentID] = true // on indique que l'agent a voté
 	resp.StatusCode = http.StatusOK
-	resp.Msg = "vote pris en compte"
+	resp.Msg = "Vote pris en compte."
 
-	/********DEBUG********/
-	fmt.Println("-----------------")
-	fmt.Printf("[%s] Updated ballot after /vote : \n", vote.AgentID)
-	fmt.Println(rba.id)
-	fmt.Println(rba.deadline)
-	fmt.Println(rba.nb_alts)
-	fmt.Println(rba.rule)
-	fmt.Println(rba.profile)
-	fmt.Println(rba.options)
-	fmt.Println("-----------------")
-	/*********************/
+	// /********DEBUG********/
+	// fmt.Println("-----------------")
+	// fmt.Printf("[%s] Updated ballot after /vote : \n", vote.AgentID)
+	// fmt.Println(rba.id)
+	// fmt.Println(rba.deadline)
+	// fmt.Println(rba.nb_alts)
+	// fmt.Println(rba.rule)
+	// fmt.Println(rba.profile)
+	// fmt.Println(rba.options)
+	// fmt.Println("-----------------")
+	// /*********************/
 
-	/********DEBUG********/
-	fmt.Println("-----------------")
-	fmt.Printf("[%s] Response /vote from ballot to server : \n", vote.AgentID)
-	fmt.Println(rba.id)
-	fmt.Println(rba.deadline)
-	fmt.Println(rba.nb_alts)
-	fmt.Println(rba.rule)
-	fmt.Println(rba.profile)
-	fmt.Println(rba.options)
-	fmt.Println("-----------------")
-	/*********************/
+	// /********DEBUG********/
+	// fmt.Println("-----------------")
+	// fmt.Printf("[%s] Response /vote from ballot to server : \n", vote.AgentID)
+	// fmt.Println(rba.id)
+	// fmt.Println(rba.deadline)
+	// fmt.Println(rba.nb_alts)
+	// fmt.Println(rba.rule)
+	// fmt.Println(rba.profile)
+	// fmt.Println(rba.options)
+	// fmt.Println("-----------------")
+	// /*********************/
 
 	return
 }
@@ -189,7 +187,7 @@ func (rsa *RestBallotAgent) result() (resp utils.RequestVoteBallot) {
 	// Vérification de la deadline
 	if rsa.deadline > time.Now().Format(time.RFC3339) {
 		resp.StatusCode = http.StatusTooEarly
-		resp.Msg = "too early"
+		resp.Msg = "Le vote n'est pas encore clôturé."
 		return
 	}
 	var ranking []comsoc.Alternative
@@ -212,9 +210,10 @@ func (rsa *RestBallotAgent) result() (resp utils.RequestVoteBallot) {
 		ranking, err = comsoc.SWFFactory(comsoc.CopelandSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
 	case "condorcet":
 		ranking, err = comsoc.CondorcetWinner(rsa.profile)
-		fmt.Println(ranking, err)
 	default:
-		err = errors.New("unknown rule")
+		resp.StatusCode = http.StatusNotImplemented
+		resp.Msg = "Méthode de vote non implémentée."
+		return
 	}
 
 	if err == nil {
@@ -231,7 +230,7 @@ func (rsa *RestBallotAgent) result() (resp utils.RequestVoteBallot) {
 
 	} else {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.Msg = "internal server error, " + err.Error()
+		resp.Msg = "Erreur interne : " + err.Error()
 	}
 
 	return

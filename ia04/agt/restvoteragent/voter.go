@@ -3,7 +3,8 @@ package restvoteragent
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -83,7 +84,7 @@ func (*Agent) decodeResponse(r *http.Response) (rep utils.Response, err error) {
 
 ======================================
 */
-func (agt *Agent) Vote(ballotID string, url_server string) (res utils.Response, err error) {
+func (agt *Agent) Vote(ballotID string, url_server string) (err error) {
 	// creation de requete de vote
 	req := utils.RequestVote{
 		AgentID:     string(agt.ID),
@@ -98,22 +99,21 @@ func (agt *Agent) Vote(ballotID string, url_server string) (res utils.Response, 
 
 	// envoi de la requête au url
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
+	log.Println("[", agt.ID, "] Vote request (", ballotID, ") : ", req)
 
 	// soit le vote a été ajouté soit une erreur est survenu ..
 
 	// traitement de la réponse
 	if err != nil {
-
-		// A REVOIR [TODO]
-		//return "",err
+		return err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
-		return
+	// décodage de la réponse
+	res, err := agt.decodeResponse(resp)
+	log.Println("[", agt.ID, "] Response to vote request (", ballotID, ") : \n		  		Statut : ", res.Status, "\n 		  		Info : ", res.Info)
+	if res.Status != http.StatusOK {
+		return errors.New(res.Info)
 	}
-
-	res, err = agt.decodeResponse(resp)
 	return
 }
 
@@ -131,7 +131,10 @@ func (agt *Agent) Vote(ballotID string, url_server string) (res utils.Response, 
 
 ======================================
 */
-func (agt *Agent) GetResult(ballotID string, url_server string) (res utils.Response, err error) {
+func (agt *Agent) GetResult(ballotID string, url_server string) (winner comsoc.Alternative, ranking []comsoc.Alternative, err error) {
+	winner = 0
+	ranking = make([]comsoc.Alternative, 0)
+
 	// creation de requete de resultat
 	req := utils.RequestVote{
 		BallotID: "scrutin1",
@@ -143,13 +146,29 @@ func (agt *Agent) GetResult(ballotID string, url_server string) (res utils.Respo
 
 	// envoi de la requête au url
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
+	log.Println("[", agt.ID, "] Result request (", ballotID, ") : ", req)
 
-	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
+	// traitement de la réponse
+	if err != nil {
+		return 0, make([]comsoc.Alternative, 0), err
+	}
+
+	res, err := agt.decodeResponse(resp)
+	if res.Status != http.StatusOK {
+		log.Println("[", agt.ID, "] Response to result request (", ballotID, ") : \n		  		Statut : ", res.Status, "\n 		  		Info : ", res.Info)
+		return winner, ranking, errors.New(res.Info)
+	} else {
+		log.Println("[", agt.ID, "] Response to result request (", ballotID,
+			") : \n		  		Statut : ", res.Status,
+			"\n 		  		Info : ", res.Info,
+			"\n 		  		Winner : ", res.Winner,
+			"\n 		  		Winner : ", res.Ranking)
+		winner = comsoc.Alternative(res.Winner)
+		for i, _ := range res.Ranking {
+			ranking = append(ranking, comsoc.Alternative(res.Ranking[i]))
+		}
 		return
 	}
-	res, err = agt.decodeResponse(resp)
-	return
 }
 
 /* =====================METHODES SUPPLEMENTAIRES=========================== */
