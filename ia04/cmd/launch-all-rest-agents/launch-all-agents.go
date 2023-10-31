@@ -7,6 +7,10 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+
+	"strconv"
+	"strings"
+
 	"time"
 
 	"ia04/agt"
@@ -17,7 +21,7 @@ import (
 )
 
 func main() {
-	const nVoters = 3 // 3 voters
+	const nVoters = 5 // 5 voters
 	const nAlts = 5   // 5 alternatives
 	const url1 = ":8080"
 	const url2 = "http://localhost:8080"
@@ -28,9 +32,12 @@ func main() {
 	go server.Start()
 
 	//Créer une requete RequestBallot et envoyer vers le serveur
+	deadline := time.Now().Add(time.Second*10).Format(time.RFC3339)
 	req := rad_t.RequestBallot{
 		Rule:     "majority",
-		Deadline: "2023-11-28T23:50:00+02:00",
+
+		Deadline: deadline,			// On implémente une deadline à + 10 secondes
+
 		Voters:   []string{"ag_id01", "ag_id02", "ag_id03"},
 		Nb_alts:  5,
 		Tiebreak: []int{4, 2, 3, 5, 1},
@@ -41,14 +48,24 @@ func main() {
 	data, _ := json.Marshal(req) // data de type []octet (json encoding) , traduire la demande en liste de bit (encode)
 
 	// envoi de la requête
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data)) //resp de type *http.Response , une requete sera envoyé au serveur
-	if err != nil {
-		log.Printf("[main] erreur %d ...", resp.StatusCode)
-		return
-	}
 
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data)) //resp : *http.Response , une requete sera envoyé au serveur
+	/*
+	if err != nil {
+		log.Println("erreur 1 ...")
+		//return
+	}
+	*/
+	/*
 	if resp.StatusCode != http.StatusCreated {
-		log.Printf("[main] erreur %d ...", resp.StatusCode)
+		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
+		log.Println("erreur 2 ...", resp.StatusCode)
+		//return
+	}
+	*/
+	if err != nil {
+		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
+		log.Println("erreur ", resp.StatusCode)
 		return
 	}
 
@@ -74,43 +91,43 @@ func main() {
 		ops[0] = rand.Intn(5) + 1
 		agt := restvoteragent.NewRestVoterAgent(id, name, prefs, url2, ops)
 		votersAgts = append(votersAgts, *agt)
+
+		// attention, obligation de passer par cette lambda pour faire capturer la valeur de l'itération par la goroutine
+		//for est bcp plus rapide de go , si on met dans for seulement la ligne 40 , on applique le start pour l'agent 99 seulement
+		func() {
+			go agt.Start("scrutin1")
+		}()
 	}
 
 	//log.Println(votersAgts)
 
-	// A REVOIR QUAND ON ENVOIE UNE REQUETE RESULT TODO
-	time.Sleep(10 * time.Second)
+
+	/*
 	for _, agt := range votersAgts {
 		func(agt restvoteragent.RestVoterAgent) {
 			go agt.Start("scrutin1")
 		}(agt)
 	}
+	*/
 
-	// creation de requete de result
-	req_res := agt.RequestVote{
-		BallotID: "scrutin1",
+	for{
+		// Récupération du résultat du scrutin
+		if time.Now().Format(time.RFC3339) > deadline {
+			resp_s,err := votersAgts[rand.Intn(nVoters)].DoRequestResult("scrutin1")
+			if err != nil {
+				log.Println("[CLIENT] An error occured : " + err.Error())
+			}
+			if resp_s.Status != http.StatusOK{
+				log.Println(http.StatusText(resp_s.Status))
+				
+			}else {
+				ranking := make([]string,len(resp_s.Ranking))
+				for i,v := range resp_s.Ranking{
+					ranking[i] = strconv.Itoa(v)
+				}
+				log.Println("[CLIENT] Client received (" + strconv.Itoa(resp_s.Status) + ") : " + "\nWinner : " +  strconv.Itoa(resp_s.Winner) + "\nRanking : " + strings.Join(ranking, ","))
+			}
+			return
+
+		}
 	}
-
-	// sérialisation de la requête
-	url_res := url2 + "/result"
-	data_res, _ := json.Marshal(req_res)
-
-	// envoi de la requête au url
-	resp_res, err := http.Post(url_res, "application/json", bytes.NewBuffer(data_res))
-
-	// traitement de la réponse
-	if err != nil {
-		// A REVOIR [TODO]
-		log.Printf("[main] erreur %d ...", resp_res.StatusCode)
-		return
-	}
-
-	if resp_res.StatusCode != http.StatusOK {
-		log.Printf("[main] erreur %d ...", resp_res.StatusCode)
-		return
-	}
-
-	//log.Println(resp_res)
-
-	fmt.Scanln()
-}
