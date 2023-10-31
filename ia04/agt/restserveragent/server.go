@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	rad "ia04/agt/restballotagent"
+	ballotagent "ia04/agt/ballotagent"
 	utils "ia04/agt/utils"
 	comsoc "ia04/comsoc"
 )
@@ -199,7 +199,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	ballot_id := string("scrutin" + strconv.Itoa(len(rsa.ballots)+1))
 	ballot_ch := make(chan utils.RequestVoteBallot)
 	rsa.ballots[ballot_id] = ballot_ch
-	ballot := rad.NewRestBallotAgent(ballot_id, req.Rule, req.Deadline, req.Voters, req.Nb_alts, tieb, ballot_ch)
+	ballot := ballotagent.NewRestBallotAgent(ballot_id, req.Rule, req.Deadline, req.Voters, req.Nb_alts, tieb, ballot_ch)
 
 	// Lancement de la ballot par une go routine (ajout)
 	go ballot.Start()
