@@ -4,28 +4,25 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	rad_t "ia04/agt"
+	restserveragent "ia04/agt/restserveragent"
+	agent "ia04/agt/restvoteragent"
+	coms "ia04/comsoc"
 	"log"
 	"math/rand"
 	"net/http"
-
 	"strconv"
 	"strings"
-
 	"time"
-
-	rad_t "ia04/agt"
-	restserveragent "ia04/agt/restserveragent"
-	restvoteragent "ia04/agt/restvoteragent"
-	coms "ia04/comsoc"
 )
 
 func main() {
 	const nVoters = 5 // 5 voters
 	const nAlts = 5   // 5 alternatives
-	const url1 = ":8080"
-	const url2 = "http://localhost:8080"
+	const port = ":8080"
+	const url_server = "http://localhost:8080"
 
-	server := restserveragent.NewRestServerAgent(url1)
+	server := restserveragent.NewRestServerAgent(port)
 
 	log.Println("démarrage du serveur...")
 	go server.Start()
@@ -43,12 +40,12 @@ func main() {
 	}
 
 	// sérialisation de la requête
-	url := url2 + "/new_ballot"
+	url_request := url_server + "/new_ballot"
 	data, _ := json.Marshal(req) // data de type []octet (json encoding) , traduire la demande en liste de bit (encode)
 
 	// envoi de la requête
 
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data)) //resp : *http.Response , une requete sera envoyé au serveur
+	resp, err := http.Post(url_request, "application/json", bytes.NewBuffer(data)) //resp : *http.Response , une requete sera envoyé au serveur
 	/*
 		if err != nil {
 			log.Println("erreur 1 ...")
@@ -69,7 +66,7 @@ func main() {
 	}
 
 	log.Println("[main] démarrage des voters...")
-	votersAgts := make([]restvoteragent.RestVoterAgent, 0, nVoters)
+	votersAgts := make([]agent.Agent, 0, nVoters)
 	for i := 0; i < nVoters; i++ {
 		id := fmt.Sprintf("ag_id%02d", i+1)
 		name := fmt.Sprintf("Voter%02d", i+1)
@@ -88,13 +85,13 @@ func main() {
 
 		ops := make([]int, 1)
 		ops[0] = rand.Intn(5) + 1
-		agt := restvoteragent.NewRestVoterAgent(id, name, prefs, url2, ops)
+		agt := agent.NewAgent(id, name, prefs, ops)
 		votersAgts = append(votersAgts, *agt)
 
 		// attention, obligation de passer par cette lambda pour faire capturer la valeur de l'itération par la goroutine
 		//for est bcp plus rapide de go , si on met dans for seulement la ligne 40 , on applique le start pour l'agent 99 seulement
 		func() {
-			go agt.Start("scrutin1")
+			go agt.Vote("scrutin1", url_server)
 		}()
 	}
 
@@ -111,7 +108,7 @@ func main() {
 	for {
 		// Récupération du résultat du scrutin
 		if time.Now().Format(time.RFC3339) > deadline {
-			resp_s, err := votersAgts[rand.Intn(nVoters)].DoRequestResult("scrutin1")
+			resp_s, err := votersAgts[rand.Intn(nVoters)].GetResult("scrutin1", url_server)
 			if err != nil {
 				log.Println("[CLIENT] An error occured : " + err.Error())
 			}

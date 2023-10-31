@@ -66,9 +66,9 @@ func (rsa *RestBallotAgent) Start() {
 		// Selection de l'action à effectuer
 		switch req.Action {
 		case "vote":
-			resp = rsa.Vote(req)
+			resp = rsa.vote(req)
 		case "result":
-			resp = rsa.Result()
+			resp = rsa.result()
 		default:
 			resp.StatusCode = http.StatusBadRequest
 			resp.Msg = "bad request, unknown process for ballot"
@@ -90,7 +90,7 @@ func (rsa *RestBallotAgent) Start() {
 
 ======================================
 */
-func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.RequestVoteBallot) {
+func (rba *RestBallotAgent) vote(vote rad_t.RequestVoteBallot) (resp rad_t.RequestVoteBallot) {
 	rba.Lock()
 	defer rba.Unlock()
 	// Vérification de la deadline
@@ -183,7 +183,7 @@ func (rba *RestBallotAgent) Vote(vote rad_t.RequestVoteBallot) (resp rad_t.Reque
 
 ======================================
 */
-func (rsa *RestBallotAgent) Result() (resp rad_t.RequestVoteBallot) {
+func (rsa *RestBallotAgent) result() (resp rad_t.RequestVoteBallot) {
 	rsa.Lock()
 	defer rsa.Unlock()
 	// Vérification de la deadline

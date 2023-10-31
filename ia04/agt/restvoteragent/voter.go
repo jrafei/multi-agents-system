@@ -4,21 +4,92 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
+	"strconv"
 
-	"ia04/agt"
 	rad_t "ia04/agt"
 
-	//rad "ia04/agt/restballotagent"
-	//agt "ia04/agt/agent"
 	coms "ia04/comsoc"
 )
 
-type RestVoterAgent struct {
-	agt        *rad_t.Agent
-	url_server string //localhost:8080
-	opts       []int
+type AgentID string
+
+type AgentI interface {
+	Equal(ag AgentI) bool
+	DeepEqual(ag AgentI) bool
+	Clone() AgentI
+	String() string
+	Prefers(a coms.Alternative, b coms.Alternative) bool
+	Start()
+}
+
+func (a *Agent) Equal(ag Agent) bool {
+	return a == &ag
+}
+
+func (a *Agent) DeepEqual(ag Agent) bool {
+	return a.ID == ag.ID && a.Name == ag.Name && slicesEquality(a.Prefs, ag.Prefs)
+}
+
+func slicesEquality(a, b []coms.Alternative) bool {
+	// Vérifie l'égalité de deux slices
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (a *Agent) Clone() Agent {
+	prefs_slc := make([]coms.Alternative, len(a.Prefs))
+	for i, v := range a.Prefs {
+		prefs_slc[i] = v
+	}
+	opts_slc := make([]int, len(a.Opts))
+	for i, v := range a.Opts {
+		opts_slc[i] = v
+	}
+	return Agent{a.ID, a.Name, prefs_slc, opts_slc}
+}
+
+func (a *Agent) String() string {
+	var infos string
+	infos = "--------------------------\n"
+	infos += "Agent ID : " + string(a.ID) + "\n"
+	infos += "Agent name : " + a.Name + "\n"
+	infos += "Agent preferences : \n"
+	for i, v := range a.Prefs {
+		infos += strconv.Itoa(i) + "." + strconv.Itoa(int(v)) + "\n"
+	}
+	infos += "Agent options : \n"
+	for i, v := range a.Opts {
+		infos += strconv.Itoa(i) + "." + strconv.Itoa(int(v)) + "\n"
+	}
+
+	infos += "-------------------------"
+	return infos
+}
+
+func (ag *Agent) Prefers(a coms.Alternative, b coms.Alternative) bool {
+	for _, v := range ag.Prefs {
+		if v == a {
+			return true
+		} else if v == b {
+			return false
+		}
+	}
+	return false // Par défaut, à vérifier
+}
+
+type Agent struct {
+	ID    AgentID
+	Name  string
+	Prefs []coms.Alternative
+	Opts  []int
 }
 
 /*
@@ -30,16 +101,14 @@ type RestVoterAgent struct {
 		- 'id' : identifiant unique du voteur
 		- 'name' : nom du voteur
 		- 'preferences' : préférences du voteur
-		- 'url_server' : adresse du serveur
 		- 'options' : options supplémentaires
 	  @returned :
 	    -  Un pointeur sur le voteur créé.
 
 ======================================
 */
-func NewRestVoterAgent(id string, name string, preferences []coms.Alternative, url_server string, options []int) *RestVoterAgent {
-	ag := rad_t.NewAgent(id, name, preferences)
-	return &RestVoterAgent{ag, url_server, options}
+func NewAgent(id string, name string, preferences []coms.Alternative, options []int) *Agent {
+	return &Agent{AgentID(id), name, preferences, options}
 }
 
 /*
@@ -55,7 +124,7 @@ func NewRestVoterAgent(id string, name string, preferences []coms.Alternative, u
 
 ======================================
 */
-func (*RestVoterAgent) decodeResponse(r *http.Response) (rep rad_t.Response, err error) {
+func (*Agent) decodeResponse(r *http.Response) (rep rad_t.Response, err error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
 	err = json.Unmarshal(buf.Bytes(), &rep)
@@ -74,23 +143,24 @@ renvoie la réponse du serveur ou une erreur
 	  'Méthode pour effectuer un vote.'
 	  @params :
 		- 'ballotID' : ID du ballot pour lequel le client vote
+		- 'url_server' : l'url du serveur accueillant le ballot
 	  @returned :
 	    - 'res' : réponse retournée par le serveur
 		- 'err' : variable d erreur
 
 ======================================
 */
-func (rva *RestVoterAgent) doRequestVoter(ballotID string) (res rad_t.Response, err error) {
+func (agt *Agent) Vote(ballotID string, url_server string) (res rad_t.Response, err error) {
 	// creation de requete de vote
-	req := agt.RequestVote{
-		AgentID:     string(rva.agt.ID),
+	req := rad_t.RequestVote{
+		AgentID:     string(agt.ID),
 		BallotID:    ballotID,
-		Preferences: rva.agt.Prefs,
-		Options:     rva.opts,
+		Preferences: agt.Prefs,
+		Options:     agt.Opts,
 	}
 
 	// sérialisation de la requête
-	url := rva.url_server + "/vote"
+	url := url_server + "/vote"
 	data, _ := json.Marshal(req) // code la requete vote en liste de bit
 
 	// envoi de la requête au url
@@ -110,7 +180,7 @@ func (rva *RestVoterAgent) doRequestVoter(ballotID string) (res rad_t.Response, 
 		return
 	}
 
-	res, err = rva.decodeResponse(resp)
+	res, err = agt.decodeResponse(resp)
 	return
 }
 
@@ -121,20 +191,21 @@ func (rva *RestVoterAgent) doRequestVoter(ballotID string) (res rad_t.Response, 
 	  'Méthode pour obtenir le résultat d'un ballot.'
 	  @params :
 		- 'ballotID' : ID du ballot pour lequel le client souhaite le résultat
+		- 'url_server' : l'url du serveur accueillant le ballot
 	  @returned :
 	    - 'res' : réponse retournée par le serveur
 		- 'err' : variable d erreur
 
 ======================================
 */
-func (rva *RestVoterAgent) DoRequestResult(ballotID string) (res rad_t.Response, err error) {
+func (agt *Agent) GetResult(ballotID string, url_server string) (res rad_t.Response, err error) {
 	// creation de requete de resultat
 	req := rad_t.RequestVote{
 		BallotID: "scrutin1",
 	}
 
 	// sérialisation de la requête
-	url := rva.url_server + "/result"
+	url := url_server + "/result"
 	data, _ := json.Marshal(req) // code la requete vote en liste de bit
 
 	// envoi de la requête au url
@@ -144,25 +215,6 @@ func (rva *RestVoterAgent) DoRequestResult(ballotID string) (res rad_t.Response,
 		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
 		return
 	}
-	res, err = rva.decodeResponse(resp)
+	res, err = agt.decodeResponse(resp)
 	return
-}
-
-// TO DO : à vérifier si on mets les ballotID
-/*
-======================================
-
-	@brief :
-	'Procédure de mise en fonction d un voteur.'
-
-======================================
-*/
-func (rva *RestVoterAgent) Start(ballotID string) {
-	log.Printf("démarrage de %s", rva.agt.ID)
-
-	resp, _ := rva.doRequestVoter(ballotID)
-
-	if resp.Status == http.StatusOK {
-		log.Print("Vote enregistré !")
-	}
 }
