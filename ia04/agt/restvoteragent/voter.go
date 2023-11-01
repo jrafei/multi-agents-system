@@ -76,9 +76,14 @@ func (*Agent) decodeResponse(r *http.Response) (rep utils.Response, err error) {
 	  @brief :
 	  'Méthode pour créer un ballot'
 	  @params :
+	    - 'rule' : méthode de vote
+		- 'deadline' : deadline de fin de vote
+		- 'voters' : liste des ID des voteurs
+		- 'nb_alts' : nombre d'alternatives
+		- 'tiebreak' : classement des alternatives pour tiebreak
 		- 'url_server' : l'url du serveur qui accueilleura le nouveau ballot
 	  @returned :
-	    - 'res' : réponse retournée par le serveur
+	    - 'ballot_id' : identifiant du ballot crée
 		- 'err' : variable d erreur
 
 ======================================
@@ -129,7 +134,6 @@ func (agt *Agent) CreateBallot(rule string, deadline string,voters []string,nb_a
 		- 'ballotID' : ID du ballot pour lequel le client vote
 		- 'url_server' : l'url du serveur accueillant le ballot
 	  @returned :
-	    - 'res' : réponse retournée par le serveur
 		- 'err' : variable d erreur
 
 ======================================
@@ -176,7 +180,8 @@ func (agt *Agent) Vote(ballotID string, url_server string) (err error) {
 		- 'ballotID' : ID du ballot pour lequel le client souhaite le résultat
 		- 'url_server' : l'url du serveur accueillant le ballot
 	  @returned :
-	    - 'res' : réponse retournée par le serveur
+	    - 'winner' : gagnant du vote (0 = aucun gagnant)
+		- 'ranking' : classement du vote
 		- 'err' : variable d erreur
 
 ======================================

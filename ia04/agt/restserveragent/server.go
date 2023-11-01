@@ -50,7 +50,7 @@ func NewRestServerAgent(addr string) *RestServerAgent {
 		- 'w' : http ResponseWriter pour réponse
 		- 'r' : requete http à vérifier
 	  @returned :
-	    - booléen
+	    - booléen : vrai si identique, faux sinon
 
 ======================================
 */
@@ -224,6 +224,8 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 		- 'action' : Le procédé souhaité
 	  @returned :
 	    - fonction associée à l action désirée
+			- 'w' : http ResponseWriter pour réponse
+			- 'r' : requete http contenant les caractéristiques du ballot
 
 ======================================
 */
