@@ -126,12 +126,7 @@ func (rba *RestBallotAgent) vote(vote utils.RequestVoteBallot) (resp utils.Reque
 		resp.Msg = " Les préférences ne sont pas conformes."
 		return
 	}
-
-	if len(vote.Options) == 0 {
-		resp.StatusCode = http.StatusBadRequest
-		resp.Msg = " Les options ne peuvent pas être vide. Il manque un seuil pour l'approbation."
-		return
-	}
+	
 	// Ajout des options
 	if vote.Options != nil && len(vote.Options) > 0 && (vote.Options[0] <= rba.nb_alts && vote.Options[0] >= 1) { // On part du principe que la première valeur est un seuil de vote (cf.Approval)
 		rba.options = append(rba.options, vote.Options)
