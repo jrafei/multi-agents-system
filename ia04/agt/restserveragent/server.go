@@ -50,7 +50,7 @@ func NewRestServerAgent(addr string) *RestServerAgent {
 		- 'w' : http ResponseWriter pour réponse
 		- 'r' : requete http à vérifier
 	  @returned :
-	    - booléen
+	    - booléen : vrai si identique, faux sinon
 
 ======================================
 */
@@ -129,6 +129,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 
 	// décodage de la requête http -> initialisation de structure RequestBallot 'req'
 	req, err := rsa.decodeRequestBallot(r)
+	log.Println("[SERVER] Received ballot creation request : ",req)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		resp_finale := utils.Response{Info: "Impossible de comprendre la requête : " + err.Error()}
@@ -221,6 +222,8 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 		- 'action' : Le procédé souhaité
 	  @returned :
 	    - fonction associée à l action désirée
+			- 'w' : http ResponseWriter pour réponse
+			- 'r' : requete http contenant les caractéristiques du ballot
 
 ======================================
 */

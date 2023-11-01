@@ -74,12 +74,66 @@ func (*Agent) decodeResponse(r *http.Response) (rep utils.Response, err error) {
 ======================================
 
 	  @brief :
+	  'Méthode pour créer un ballot'
+	  @params :
+	    - 'rule' : méthode de vote
+		- 'deadline' : deadline de fin de vote
+		- 'voters' : liste des ID des voteurs
+		- 'nb_alts' : nombre d'alternatives
+		- 'tiebreak' : classement des alternatives pour tiebreak
+		- 'url_server' : l'url du serveur qui accueilleura le nouveau ballot
+	  @returned :
+	    - 'ballot_id' : identifiant du ballot crée
+		- 'err' : variable d erreur
+
+======================================
+*/
+func (agt *Agent) CreateBallot(rule string, deadline string,voters []string,nb_alts int,tiebreak []int ,url_server string) (ballot_id string, err error) {
+	// creation de requete de création de ballot
+	req := utils.RequestBallot{
+		Rule:     rule,
+		Deadline: deadline, 
+		Voters:   voters,
+		Nb_alts:  nb_alts,
+		Tiebreak: tiebreak,
+	}
+
+	// sérialisation de la requête
+	url := url_server + "/new_ballot"
+	data, _ := json.Marshal(req) // code la requete vote en liste de bit
+
+	// envoi de la requête au url
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
+	log.Println("[", agt.ID, "] Ballot creation request : ", req)
+
+	// soit le ballot a été créé, soit une erreur est survenu ..
+
+	// traitement de la réponse
+	if err != nil {
+		return "",err
+	}
+
+	// décodage de la réponse
+	res, err := agt.decodeResponse(resp)
+	if res.Status != http.StatusOK {
+		err = errors.New(res.Info)
+		ballot_id=""
+	}else{
+		ballot_id = res.Ballot_id
+	}
+	log.Println("[", agt.ID, "] Response to ballot creation request (", ballot_id, ") : \n		  		Statut : ", res.Status, "\n 		  		Info : ", res.Info)
+	return
+}
+
+/*
+======================================
+
+	  @brief :
 	  'Méthode pour effectuer un vote.'
 	  @params :
 		- 'ballotID' : ID du ballot pour lequel le client vote
 		- 'url_server' : l'url du serveur accueillant le ballot
 	  @returned :
-	    - 'res' : réponse retournée par le serveur
 		- 'err' : variable d erreur
 
 ======================================
@@ -126,7 +180,8 @@ func (agt *Agent) Vote(ballotID string, url_server string) (err error) {
 		- 'ballotID' : ID du ballot pour lequel le client souhaite le résultat
 		- 'url_server' : l'url du serveur accueillant le ballot
 	  @returned :
-	    - 'res' : réponse retournée par le serveur
+	    - 'winner' : gagnant du vote (0 = aucun gagnant)
+		- 'ranking' : classement du vote
 		- 'err' : variable d erreur
 
 ======================================
