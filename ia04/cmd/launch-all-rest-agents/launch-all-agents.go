@@ -1,17 +1,13 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
-	"net/http"
 	"time"
 
 	rsa "ia04/agt/restserveragent"
 	agent "ia04/agt/restvoteragent"
-	utils "ia04/agt/utils"
 	comsoc "ia04/comsoc"
 )
 
@@ -26,31 +22,16 @@ func main() {
 	log.Println("démarrage du serveur...")
 	go server.Start()
 
-	//Créer une requete RequestBallot et envoyer vers le serveur
+	//Créer un agent qui demande la création d'un ballot
+	ballot_agent := agent.NewAgent("ballot_agt1", "ballot_agt", nil, nil)
+
 	deadline := time.Now().Add(time.Second * 10).Format(time.RFC3339)
-	req := utils.RequestBallot{
-		Rule: "majority",
-
-		Deadline: deadline, // On implémente une deadline à + 10 secondes
-
-		Voters:   []string{"ag_id01", "ag_id02", "ag_id03"},
-		Nb_alts:  5,
-		Tiebreak: []int{4, 2, 3, 5, 1},
-	}
-
-	// sérialisation de la requête
-	url_request := url_server + "/new_ballot"
-	data, _ := json.Marshal(req) // data de type []octet (json encoding) , traduire la demande en liste de bit (encode)
-
-	// envoi de la requête
-
-	resp, err := http.Post(url_request, "application/json", bytes.NewBuffer(data)) //resp : *http.Response , une requete sera envoyé au serveur
-
-	if err != nil {
-		err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
-		log.Println("erreur ", resp.StatusCode)
-		return
-	}
+	Rule := "majority"
+	Voters := []string{"ag_id01", "ag_id02", "ag_id03", "ballot_agt1"}
+	Nb_alts := 5
+	Tiebreak := []int{4, 2, 3, 5, 1}
+	// demande de creation d'un ballot
+	ballot_agent.CreateBallot(Rule, deadline, Voters, Nb_alts, Tiebreak, url_server)
 
 	log.Println("[main] démarrage des voters...")
 	votersAgts := make([]agent.Agent, 0, nVoters)
@@ -81,6 +62,8 @@ func main() {
 			go agt.Vote("scrutin1", url_server)
 		}()
 	}
+
+	go ballot_agent.Vote("scrutin1", url_server)
 
 	for {
 		// Récupération du résultat du scrutin

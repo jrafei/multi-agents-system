@@ -154,6 +154,13 @@ func (agt *Agent) GetResult(ballotID string, url_server string) (winner comsoc.A
 	}
 
 	res, err := agt.decodeResponse(resp)
+
+	// erreur de decodage
+	if err != nil {
+		log.Println("[", agt.ID, "] Response to result request (", ballotID, ") : \n			   InvalidUnmarshalError.")
+		return
+	}
+
 	if res.Status != http.StatusOK {
 		log.Println("[", agt.ID, "] Response to result request (", ballotID, ") : \n		  		Statut : ", res.Status, "\n 		  		Info : ", res.Info)
 		return winner, ranking, errors.New(res.Info)
@@ -168,6 +175,65 @@ func (agt *Agent) GetResult(ballotID string, url_server string) (winner comsoc.A
 			ranking = append(ranking, comsoc.Alternative(res.Ranking[i]))
 		}
 		return
+	}
+}
+
+/*
+======================================
+
+	  @brief :
+	  'Méthode pour créer un ballot'
+	  @params :
+		- 'url' : l'url du serveur qui contient la demande du création du ballot
+	  @returned :
+	    - 'res' : réponse retournée par le serveur
+		- 'err' : variable d erreur
+
+======================================
+*/
+func (agt *Agent) CreateBallot(rule string, deadline string, voters []string, nbAlts int, tiebreak []int, url_server string) (ballot_id string, err error) {
+	// créer la requête de création de ballot
+	req := utils.RequestBallot{
+		Rule:     rule,
+		Deadline: deadline,
+		Voters:   voters,
+		Nb_alts:  nbAlts,
+		Tiebreak: tiebreak,
+	}
+
+	// sérialisation de la requête
+	url := url_server + "/new_ballot"
+	data, _ := json.Marshal(req) // code la requete vote en liste de bit
+
+	// envoi de la requête au url
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
+	log.Println("[", agt.ID, "] Ballot creation request : ", req)
+
+	// soit le ballot a été créé, soit une erreur est survenu ..
+
+	// traitement de la réponse
+	if err != nil {
+		return "", err
+	}
+	// décodage de la réponse
+	res, err := agt.decodeResponse(resp)
+
+	// erreur de décodage
+	if err != nil {
+		log.Println("[", agt.ID, "] Response to result request          : \n			   InvalidUnmarshalError.")
+		return
+	}
+
+	if res.Status != http.StatusOK {
+		log.Println("[", agt.ID, "] Response to create ballot request : \n		  		    Statut : ", res.Status, "\n 		  		    Info : ", res.Info)
+		return
+	} else {
+		log.Println("[", agt.ID, "] Response to create ballot request :"+
+			"\n		  		Ballot id : ", res.Ballot_id,
+			"\n 		  		Info : ", res.Info,
+			"\n					Statud : ", res.Status)
+
+		return res.Ballot_id, err
 	}
 }
 
