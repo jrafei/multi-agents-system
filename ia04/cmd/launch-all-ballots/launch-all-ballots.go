@@ -54,24 +54,11 @@ func main() {
 		resp, err := http.Post(url_request, "application/json", bytes.NewBuffer(data)) //resp : *http.Response , une requete sera envoyé au serveur
 
 		if err != nil {
-			err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
-			log.Println("erreur ", resp.StatusCode)
+			log.Println("erreur status code : ", resp.StatusCode)
+			log.Println("erreur status 		: ", resp.Status)
 			return
 		}
 	}
-	/*
-		if err != nil {
-			log.Println("erreur 1 ...")
-			//return
-		}
-	*/
-	/*
-		if resp.StatusCode != http.StatusCreated {
-			err = fmt.Errorf("[%d] %s", resp.StatusCode, resp.Status)
-			log.Println("erreur 2 ...", resp.StatusCode)
-			//return
-		}
-	*/
 
 	log.Println("[main] démarrage des voters...")
 	votersAgts := make([]agent.Agent, 0, nVoters)
@@ -106,28 +93,15 @@ func main() {
 		}()
 	}
 
-	//log.Println(votersAgts)
-
-	/*
-		for _, agt := range votersAgts {
-			func(agt restvoteragent.RestVoterAgent) {
-				go agt.Start("scrutin1")
-			}(agt)
-		}
-	*/
-
 	for {
 		for i, deadl := range m {
-			//log.Println("deadline : " + deadl)
-			//log.Println("Now : " + time.Now().Format(time.RFC3339))
-
-			// Récupération du résultat du scrutin
+		
 			if time.Now().Format(time.RFC3339) > deadl {
-				log.Println("==============================tour " + strconv.Itoa(i) + "=====================")
-				winner,ranking,err := votersAgts[rand.Intn(nVoters)].GetResult("scrutin"+strconv.Itoa(i), url_server)
+				log.Println("============================== Result " + strconv.Itoa(i) + " ========================")
+				winner, ranking, err := votersAgts[rand.Intn(nVoters)].GetResult("scrutin"+strconv.Itoa(i), url_server)
 				if err != nil {
 					fmt.Println(err)
-				}else {
+				} else {
 					fmt.Println("winner : ", winner)
 					fmt.Println("ranking : ", ranking)
 				}
