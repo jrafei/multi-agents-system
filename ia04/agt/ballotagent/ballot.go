@@ -127,6 +127,11 @@ func (rba *RestBallotAgent) vote(vote utils.RequestVoteBallot) (resp utils.Reque
 		return
 	}
 
+	if len(vote.Options) == 0 {
+		resp.StatusCode = http.StatusBadRequest
+		resp.Msg = " Les options ne peuvent pas être vide. Il manque un seuil pour l'approbation."
+		return
+	}
 	// Ajout des options
 	if vote.Options != nil && len(vote.Options) > 0 && (vote.Options[0] <= rba.nb_alts && vote.Options[0] >= 1) { // On part du principe que la première valeur est un seuil de vote (cf.Approval)
 		rba.options = append(rba.options, vote.Options)
@@ -143,30 +148,6 @@ func (rba *RestBallotAgent) vote(vote utils.RequestVoteBallot) (resp utils.Reque
 	rba.voter_ids[vote.AgentID] = true // on indique que l'agent a voté
 	resp.StatusCode = http.StatusOK
 	resp.Msg = "Vote pris en compte."
-
-	// /********DEBUG********/
-	// fmt.Println("-----------------")
-	// fmt.Printf("[%s] Updated ballot after /vote : \n", vote.AgentID)
-	// fmt.Println(rba.id)
-	// fmt.Println(rba.deadline)
-	// fmt.Println(rba.nb_alts)
-	// fmt.Println(rba.rule)
-	// fmt.Println(rba.profile)
-	// fmt.Println(rba.options)
-	// fmt.Println("-----------------")
-	// /*********************/
-
-	// /********DEBUG********/
-	// fmt.Println("-----------------")
-	// fmt.Printf("[%s] Response /vote from ballot to server : \n", vote.AgentID)
-	// fmt.Println(rba.id)
-	// fmt.Println(rba.deadline)
-	// fmt.Println(rba.nb_alts)
-	// fmt.Println(rba.rule)
-	// fmt.Println(rba.profile)
-	// fmt.Println(rba.options)
-	// fmt.Println("-----------------")
-	// /*********************/
 
 	return
 }
