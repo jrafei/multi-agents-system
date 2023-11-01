@@ -162,7 +162,7 @@ func (agt *Agent) GetResult(ballotID string, url_server string) (winner comsoc.A
 			") : \n		  		Statut : ", res.Status,
 			"\n 		  		Info : ", res.Info,
 			"\n 		  		Winner : ", res.Winner,
-			"\n 		  		Winner : ", res.Ranking)
+			"\n 		  		Ranking : ", res.Ranking)
 		winner = comsoc.Alternative(res.Winner)
 		for i, _ := range res.Ranking {
 			ranking = append(ranking, comsoc.Alternative(res.Ranking[i]))
