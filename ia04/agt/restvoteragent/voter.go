@@ -187,7 +187,7 @@ func (agt *Agent) GetResult(ballotID string, url_server string) (winner comsoc.A
 
 	// creation de requete de resultat
 	req := utils.RequestVote{
-		BallotID: "scrutin1",
+		BallotID: ballotID,
 	}
 
 	// sérialisation de la requête

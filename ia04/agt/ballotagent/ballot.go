@@ -226,6 +226,8 @@ func (rsa *RestBallotAgent) result() (resp utils.RequestVoteBallot) {
 			resp.Winner = resp.Ranking[0]
 		} else if len(ranking) == 1 {
 			resp.Winner = int(ranking[0])
+		} else if len(ranking) == 0 {
+			resp.Msg = "Aucun gagnant..."
 		}
 
 	} else {

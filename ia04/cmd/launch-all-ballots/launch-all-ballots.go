@@ -55,7 +55,7 @@ func main() {
 
 	// création des ballots
 	for ind, ballot := range list_ballot {
-		//Créer une requete RequestBallot et envoyer vers le serveur
+				//Créer une requete RequestBallot et envoyer vers le serveur
 		mult := (ind + 1) * 5
 		deadline := time.Now().Add(time.Second * time.Duration(mult)).Format(time.RFC3339)
 		m[ind+1] = deadline // false pour résultat non publié encore
@@ -85,9 +85,9 @@ func main() {
 
 	for {
 		for i, deadl := range m {
-		
+			
 			if time.Now().Format(time.RFC3339) > deadl {
-				log.Println("============================== Result " + strconv.Itoa(i) + " ========================")
+				log.Println("============================== Result " +"scrutin"+ strconv.Itoa(i) + " ========================")
 				winner, ranking, err := votersAgts[rand.Intn(nVoters)].GetResult("scrutin"+strconv.Itoa(i), url_server)
 				if err != nil {
 					fmt.Println(err)
