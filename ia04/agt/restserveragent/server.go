@@ -140,9 +140,6 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	// traitement de la requête
 	var resp utils.Response
 
-	// fmt.Println("Request /init_ballot :")
-	// fmt.Println(req)
-
 	// Vérification de la méthode de vote
 	switch req.Rule {
 	case "majority", "borda", "approval", "stv", "copeland", "condorcet":
@@ -211,15 +208,6 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	serial, _ := json.Marshal(resp)
 	w.Write(serial)
 
-	// /********DEBUG********/
-	// fmt.Println("-----------------")
-	// fmt.Println("Updated server after /init_ballot :")
-	// fmt.Println(rsa.id)
-	// fmt.Println(rsa.addr)
-	// fmt.Println(rsa.ballots)
-	// fmt.Println("-----------------")
-	// /*********************/
-
 }
 
 /*
@@ -261,10 +249,6 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 		// traitement de la requête
 		var resp utils.RequestVoteBallot
 
-		// /********DEBUG********/
-		// fmt.Printf("[%s] Request /%s from client to server :\n", req.AgentID, action)
-		// fmt.Println("RequestVote : ", req)
-
 		// Vérification du BallotID
 		ballot_chan, exists := rsa.ballots[req.BallotID]
 		if !exists {
@@ -283,25 +267,10 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 
 		vote_req := utils.RequestVoteBallot{RequestVote: &req, Action: action, StatusCode: 0, Msg: ""}
 
-		// /********DEBUG********/
-		// fmt.Printf("[%s] Request /%s from server to ballot :\n", req.AgentID, action)
-		// fmt.Println("RequestVoteBallot : ", vote_req)
-		// /*********************/
-
 		// Transmission de la requête au ballot correspondant
 		ballot_chan <- vote_req
 		// Attente de la response du ballot
 		resp = <-ballot_chan
-
-		// /********DEBUG********/
-		// fmt.Println("Reponse from server to client : ")
-		// fmt.Printf("[%s] Action :%s \n", req.AgentID, resp.Action)
-		// fmt.Printf("[%s] Status Code : %d \n", req.AgentID, resp.StatusCode)
-		// fmt.Printf("[%s] Msg : %s \n", req.AgentID, resp.Msg)
-		// fmt.Printf("[%s] Winner : %d\n", req.AgentID, resp.Winner)
-		// fmt.Printf("[%s] Ranking : %d \n", req.AgentID, resp.Ranking)
-		// /*********************/
-
 		// Transmission de la réponse du ballot au client
 		switch action {
 		case "vote":
