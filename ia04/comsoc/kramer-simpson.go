@@ -28,7 +28,7 @@ func KramerSimpson_SWF(p Profile) (count Count, err error){
 		count[Alternative(i)] = min_val_duel
 		i++;
 	}
-	return
+	return count,nil
 }
 
 func KramerSimpson_SCF(p Profile) (bestAlts []Alternative, err error) {
