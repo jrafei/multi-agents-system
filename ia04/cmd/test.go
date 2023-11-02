@@ -130,6 +130,7 @@ func main() {
 
 		fmt.Println(res)
 	*/
+	/*
 	// TEST	CONDORCET
 
 	prefs := [][]comsoc.Alternative{
@@ -148,6 +149,7 @@ func main() {
 	//}
 
 	fmt.Println(res)
+	*/
 	/*
 		// TEST COPELAND
 		p := [][]comsoc.Alternative{
@@ -183,4 +185,24 @@ func main() {
 
 		fmt.Println(res)
 	*/
+	
+	// TEST Kramer
+	p := [][]comsoc.Alternative{
+		{1, 2, 3, 4},
+		{1, 2, 3, 4},
+		{1, 2, 3, 4},
+		{1, 2, 3, 4},
+		{1, 2, 3, 4},
+		{2, 3, 4, 1},
+		{2, 3, 4, 1},
+		{2, 3, 4, 1},
+		{2, 3, 4, 1},
+		{4, 3, 1, 2},
+		{4, 3, 1, 2},
+		{4, 3, 1, 2},
+	}
+
+	fmt.Println(comsoc.KramerSimpson_SWF(p))
+	fmt.Println(comsoc.KramerSimpson_SCF(p))
+
 }
