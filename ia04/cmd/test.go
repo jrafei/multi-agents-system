@@ -1,5 +1,9 @@
 package main
 
+import (
+	"fmt"
+	"ia04/comsoc"
+)
 
 func main() {
 	/*
@@ -63,39 +67,44 @@ func main() {
 		fmt.Println(comsoc.MajoritySWF(profile))
 		fmt.Println(comsoc.MajoritySCF(profile))
 		fmt.Println(comsoc.BordaSCF(profile))
-		*/
-		
-/*
-			// TEST BORDA
-				prefs := [][]comsoc.Alternative{
-					{1, 2, 3},
-					{1, 2, 3},
-					{2, 3, 1},
-					{2, 3, 1},
-				}
+	*/
 
-				res, _ := comsoc.BordaSWF(prefs)
+	/*
+		// TEST BORDA
+			prefs := [][]comsoc.Alternative{
+				{1, 2, 3},
+				{1, 2, 3},
+				{2, 3, 1},
+				{2, 3, 1},
+			}
 
-				fmt.Println(res)
-	
+			res, _ := comsoc.BordaSWF(prefs)
 
+			fmt.Println(res)
+
+
+	*/
 	/*
 		// TEST SWF
 
 		prefs := [][]comsoc.Alternative{
-			{1, 3, 2},
-			{1, 2, 3},
-			{2, 3, 1},
-			{2, 1, 3},
-			{3, 1, 2},
-			{3, 1, 2},
+			{2, 1,3,4,5,6},
+			{5,4,2,3,1,6},
+			{5,2,3,4,1,6},
+			{2,1,3,4,5,6},
+			{2,4,3,5,1,6},
+			{5,2,3,6,4,1},
 		}
 		//thresholds := []int{2, 1, 2, 3}
 
-		res, err := comsoc.SWFFactory(comsoc.BordaSWF, comsoc.TieBreakFactory([]comsoc.Alternative{3, 2, 1, 4}))(prefs)
+		res, _ := comsoc.SWFFactory(comsoc.BordaSWF, comsoc.TieBreakFactory([]comsoc.Alternative{1,5,4,6,3,2}))(prefs)
 
 		fmt.Println(res)
+
+		res2, _ := comsoc.SCFFactory(comsoc.BordaSCF, comsoc.TieBreakFactory([]comsoc.Alternative{1,5,4,6,3,2}))(prefs)
+		fmt.Println(res2)
 	*/
+
 	/*
 		// TEST APPROVAL
 
@@ -103,21 +112,42 @@ func main() {
 			{1, 3, 2},
 			{1, 2, 3},
 			{2, 3, 1},
-			{4, 1, 2},
+			{3, 1, 2},
 		}
 		thresholds := []int{2, 1, 2, 3}
-
-		res, err := comsoc.ApprovalSCF(prefs, thresholds)
+		tieb := make([]comsoc.Alternative,3)
+		tieb[0] = comsoc.Alternative(1)
+		tieb[1] = comsoc.Alternative(2)
+		tieb[2] = comsoc.Alternative(3)
+		res, err := comsoc.SCFFactoryOptions(comsoc.ApprovalSCF,comsoc.TieBreakFactory(tieb))(prefs,thresholds)
 
 		if err != nil {
 			fmt.Println(err)
 		}
-		if len(res) != 1 || res[0] != 1 {
-			fmt.Println("error, 1 should be the only best Alternative")
-		}
+		//if len(res) != 1 || res[0] != 1 {
+		//	fmt.Println("error, 1 should be the only best Alternative")
+		//}
 
 		fmt.Println(res)
 	*/
+	// TEST	CONDORCET
+
+	prefs := [][]comsoc.Alternative{
+		{1, 2, 3},
+		{1, 3, 2},
+		{3, 2, 1},
+	}
+
+	res, err := comsoc.CondorcetWinner(prefs)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	//if len(res) != 1 || res[0] != 1 {
+	//	fmt.Println("error, 1 should be the only best Alternative")
+	//}
+
+	fmt.Println(res)
 	/*
 		// TEST COPELAND
 		p := [][]comsoc.Alternative{
@@ -139,15 +169,18 @@ func main() {
 	*/
 	/*
 		// TEST STV
-			p := [][]comsoc.Alternative{
-				{1, 3, 2},
-				{1, 2, 3},
-				{2, 3, 1},
-				{3, 1, 2},
-			}
+		p := [][]comsoc.Alternative{
+			{1, 3, 2},
+			{1, 2, 3},
+			{2, 3, 1},
+			{3, 1, 2},
+		}
+		tieb := make([]comsoc.Alternative,3)
+		tieb[0] = comsoc.Alternative(1)
+		tieb[1] = comsoc.Alternative(2)
+		tieb[2] = comsoc.Alternative(3)
+		res, _ := comsoc.SWFFactoryOptions(comsoc.STV_SWF,comsoc.TieBreakFactory(tieb))(p,tieb)
 
-			res, _ := comsoc.STV_SWF(p)
-
-			fmt.Println(res)
+		fmt.Println(res)
 	*/
 }

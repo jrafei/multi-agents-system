@@ -13,6 +13,12 @@ func MajoritySWF(p Profile) (count Count, err error) {
 	}
 
 	count = make(map[Alternative]int)
+	// Initialisation des décomptes à 0
+	for _, alt := range p[0] {
+		count[alt] = 0
+	}
+
+	// Comptage
 	for _, pref := range p {
 		_, exist := count[pref[0]]
 		if exist {
@@ -23,7 +29,6 @@ func MajoritySWF(p Profile) (count Count, err error) {
 	}
 
 	return count, nil
-	// peut-être retourner aussi les alts non comptées !
 }
 
 //renvoie à partir d'un profile, les alternantives qui ont un nombre de vote maximal

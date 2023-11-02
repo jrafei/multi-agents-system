@@ -18,6 +18,11 @@ func ApprovalSWF(p Profile, thresholds []int) (count Count, err error) {
 	}
 
 	count = make(map[Alternative]int)
+	// Initialisation des décomptes à 0
+	for _, alt := range p[0] {
+		count[alt] = 0
+	}
+
 	for index_profile, pref := range p {
 		if thresholds[index_profile] > len(pref) {
 			return nil, errors.New("the thresholds exceeds the preference length")

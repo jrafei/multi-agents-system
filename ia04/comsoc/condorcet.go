@@ -5,6 +5,7 @@ import (
 )
 
 func CondorcetWinner(p Profile) (bestAlts []Alternative, err error) {
+ 
 	if len(p) == 0 {
 		return nil, errors.New("no preference in profile ")
 	}
@@ -44,7 +45,8 @@ func CondorcetWinner(p Profile) (bestAlts []Alternative, err error) {
 		}
 	}
 	if len(bestAlts) > 1 {
-		return nil, errors.New("winner does not exist")
+		// AUCUN gagnant de condorcet en cas de tie, on retourne une slice vide
+		return make([]Alternative, 0), nil
 	}
 
 	return bestAlts, nil
