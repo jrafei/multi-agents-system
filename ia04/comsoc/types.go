@@ -52,7 +52,7 @@ func CountIsPref(p Profile) map[AltTuple]int {
 }
 
 
-// renvoie les meilleures alternatives pour un décomtpe donné
+// renvoie les pires alternatives pour un décomtpe donné
 func minCount(count Count) (worstAlts []Alternative) {
 	// Récupération des clés de valeur max ( plusieurs clés possibles )
 	worstAlts = make([]Alternative, 0)
@@ -63,10 +63,10 @@ func minCount(count Count) (worstAlts []Alternative) {
 	}
 	for k, v := range count {
 		if v == min_pts {
-			// On ajoute la clé si elle est égale à la valeur max
+			// On ajoute la clé si elle est égale à la valeur min
 			worstAlts = append(worstAlts, k)
 		} else if v < min_pts {
-			// On reconstruit un tableau d'une clé si plus grand
+			// On reconstruit un tableau d'une clé si plus petit
 			worstAlts = make([]Alternative, 1)
 			worstAlts[0] = k
 			min_pts = v
