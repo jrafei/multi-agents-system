@@ -186,6 +186,10 @@ func (rsa *RestBallotAgent) result() (resp utils.RequestVoteBallot) {
 		ranking, err = comsoc.SWFFactory(comsoc.CopelandSWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
 	case "condorcet":
 		ranking, err = comsoc.CondorcetWinner(rsa.profile)
+	case "young-condorcet":
+		ranking, err = comsoc.YoungCondorcet(rsa.profile,rsa.tiebreak)
+	case "kramer-simpson":
+		ranking, err = comsoc.SWFFactory(comsoc.KramerSimpson_SWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
 	default:
 		resp.StatusCode = http.StatusNotImplemented
 		resp.Msg = "Méthode de vote non implémentée."

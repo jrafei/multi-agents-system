@@ -202,7 +202,9 @@ func main() {
 		{4, 3, 1, 2},
 	}
 
-	fmt.Println(comsoc.KramerSimpson_SWF(p))
-	fmt.Println(comsoc.KramerSimpson_SCF(p))
+	fmt.Println(comsoc.SWFFactory(comsoc.KramerSimpson_SWF, comsoc.TieBreakFactory([]comsoc.Alternative{1,2,3,4}))(p))
+	fmt.Println(comsoc.SCFFactory(comsoc.KramerSimpson_SCF, comsoc.TieBreakFactory([]comsoc.Alternative{1,2,3,4}))(p))
+
+	//fmt.Println(comsoc.KramerSimpson_SCF(p))
 
 }
