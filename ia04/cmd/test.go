@@ -131,24 +131,24 @@ func main() {
 		fmt.Println(res)
 	*/
 	/*
-	// TEST	CONDORCET
+		// TEST	CONDORCET
 
-	prefs := [][]comsoc.Alternative{
-		{1, 2, 3},
-		{1, 3, 2},
-		{3, 2, 1},
-	}
+		prefs := [][]comsoc.Alternative{
+			{1, 2, 3},
+			{1, 3, 2},
+			{3, 2, 1},
+		}
 
-	res, err := comsoc.CondorcetWinner(prefs)
+		res, err := comsoc.CondorcetWinner(prefs)
 
-	if err != nil {
-		fmt.Println(err)
-	}
-	//if len(res) != 1 || res[0] != 1 {
-	//	fmt.Println("error, 1 should be the only best Alternative")
-	//}
+		if err != nil {
+			fmt.Println(err)
+		}
+		//if len(res) != 1 || res[0] != 1 {
+		//	fmt.Println("error, 1 should be the only best Alternative")
+		//}
 
-	fmt.Println(res)
+		fmt.Println(res)
 	*/
 	/*
 		// TEST COPELAND
@@ -185,8 +185,8 @@ func main() {
 
 		fmt.Println(res)
 	*/
-	
-	// TEST Kramer
+
+	/* TEST Kramer
 	p := [][]comsoc.Alternative{
 		{1, 2, 3, 4},
 		{1, 2, 3, 4},
@@ -206,5 +206,29 @@ func main() {
 	fmt.Println(comsoc.SCFFactory(comsoc.KramerSimpson_SCF, comsoc.TieBreakFactory([]comsoc.Alternative{1,2,3,4}))(p))
 
 	//fmt.Println(comsoc.KramerSimpson_SCF(p))
+	*/
+	// One_flip(pref []Alternative) [][]Alternative
 
+	/* TEST DODGSON */
+	p := [][]comsoc.Alternative{
+		{1, 2, 3, 4},
+		{1, 2, 3, 4},
+		{1, 2, 3, 4},
+		{1, 2, 3, 4},
+		{1, 2, 3, 4},
+		{2, 3, 4, 1},
+		{2, 3, 4, 1},
+		{2, 3, 4, 1},
+		{2, 3, 4, 1},
+		{4, 3, 1, 2},
+		{4, 3, 1, 2},
+		{4, 3, 1, 2},
+	}
+	//pref := p[0]
+	tieb := make([]comsoc.Alternative, 4)
+	tieb[0] = comsoc.Alternative(1)
+	tieb[1] = comsoc.Alternative(2)
+	tieb[2] = comsoc.Alternative(3)
+	tieb[3] = comsoc.Alternative(4)
+	fmt.Println(comsoc.Dodgson(p, tieb))
 }
