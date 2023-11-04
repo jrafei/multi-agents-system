@@ -51,7 +51,6 @@ func CountIsPref(p Profile) map[AltTuple]int {
 	return win
 }
 
-
 // renvoie les pires alternatives pour un décomtpe donné
 func minCount(count Count) (worstAlts []Alternative) {
 	// Récupération des clés de valeur max ( plusieurs clés possibles )
@@ -75,7 +74,6 @@ func minCount(count Count) (worstAlts []Alternative) {
 	return worstAlts
 }
 
-
 // Elimination d'un élément, à partir de son index, dans une slice
 func Remove(s []Alternative, index int) []Alternative {
 	ret := make([]Alternative, 0)
@@ -83,6 +81,48 @@ func Remove(s []Alternative, index int) []Alternative {
 	return append(ret, s[index+1:]...)
 }
 
+/*
+renvoie True si pref1 est égale à pref2
+*/
+func equal_prefs(pref1 []Alternative, pref2 []Alternative) bool {
+
+	for k, alt1 := range pref1 {
+		if alt1 != pref2[k] {
+			return false
+		}
+
+	}
+	return true
+}
+
+/*
+Fonction pour échanger les éléments aux indices i et j dans la liste
+*/
+func swap(numbers []Alternative, i, j int) {
+	numbers[i], numbers[j] = numbers[j], numbers[i]
+}
+
+/*
+Fonction récursive pour générer les permutations
+*/
+func permute(numbers []Alternative, start int, result *[][]Alternative) {
+	if start == len(numbers)-1 {
+		// Fait une copie de la permutation courante pour ne pas modifier le résultat
+		perm := make([]Alternative, len(numbers))
+		copy(perm, numbers)
+		*result = append(*result, perm)
+		return
+	}
+
+	for i := start; i < len(numbers); i++ {
+		// Échange le début avec l'élément courant
+		swap(numbers, start, i)
+		// Appel récursif pour les éléments restants
+		permute(numbers, start+1, result)
+		// Restaure l'ordre initial pour le prochain itération
+		swap(numbers, start, i)
+	}
+}
 
 /*---------- FONCTIONS UTILITAIRES ------------*/
 

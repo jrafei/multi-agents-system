@@ -230,5 +230,6 @@ func main() {
 	tieb[1] = comsoc.Alternative(2)
 	tieb[2] = comsoc.Alternative(3)
 	tieb[3] = comsoc.Alternative(4)
-	fmt.Println(comsoc.Dodgson(p, tieb))
+	fmt.Println(comsoc.Kemeny(p, nil))
+
 }

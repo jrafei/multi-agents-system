@@ -106,7 +106,7 @@ func one_flip(pref []Alternative, pere []Alternative) [][]Alternative {
 		copy_pref[i] = pref[i+1]
 		copy_pref[i+1] = pref[i]
 
-		if len(pere) == 0 || !Equal(pere, copy_pref) {
+		if len(pere) == 0 || !equal_prefs(pere, copy_pref) {
 
 			list_pref = append(list_pref, copy_pref)
 			//fmt.Println("liste_pref = ", list_pref)
@@ -115,18 +115,4 @@ func one_flip(pref []Alternative, pere []Alternative) [][]Alternative {
 	}
 
 	return list_pref
-}
-
-/*
-renvoie True si pref1 est égale à pref2
-*/
-func Equal(pref1 []Alternative, pref2 []Alternative) bool {
-
-	for k, alt1 := range pref1 {
-		if alt1 != pref2[k] {
-			return false
-		}
-
-	}
-	return true
 }
