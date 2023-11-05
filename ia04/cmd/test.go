@@ -209,7 +209,31 @@ func main() {
 	*/
 	// One_flip(pref []Alternative) [][]Alternative
 
-	/* TEST DODGSON */
+	/* TEST DODGSON
+	p := [][]comsoc.Alternative{
+		{1, 2, 3, 4},
+		{1, 2, 3, 4},
+		{1, 2, 3, 4},
+		{1, 2, 3, 4},
+		{1, 2, 3, 4},
+		{2, 3, 4, 1},
+		{2, 3, 4, 1},
+		{2, 3, 4, 1},
+		{2, 3, 4, 1},
+		{4, 3, 1, 2},
+		{4, 3, 1, 2},
+		{4, 3, 1, 2},
+	}
+	//pref := p[0]
+	tieb := make([]comsoc.Alternative, 4)
+	tieb[0] = comsoc.Alternative(1)
+	tieb[1] = comsoc.Alternative(2)
+	tieb[2] = comsoc.Alternative(3)
+	tieb[3] = comsoc.Alternative(4)
+	fmt.Println(comsoc.Dodgson(p, tieb))
+	*/
+
+	/* TEST KEMENY */
 	p := [][]comsoc.Alternative{
 		{1, 2, 3, 4},
 		{1, 2, 3, 4},
