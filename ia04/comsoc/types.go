@@ -169,7 +169,13 @@ func maxCount(count Count) (bestAlts []Alternative) {
 // vérifie les préférences d'un agent, par ex. qu'ils sont tous complets et que chaque alternative n'apparaît qu'une seule fois
 func CheckProfile(prefs []Alternative, alts []Alternative) error {
 	if len(prefs) == 0 {
-		return errors.New("the list of preference is empty")
+		return fmt.Errorf("the list of preference is empty")
+	}
+
+	if len(alts) < len(prefs){
+		return fmt.Errorf("there are more alternatives (%d) in preference than required (%d)",len(prefs),len(alts))
+	}else if len(alts) > len(prefs){
+		return fmt.Errorf("there are less alternatives (%d) in preference than required (%d)",len(prefs),len(alts))
 	}
 
 	// Verification que chaque alternative de la liste 'alts' apparait une seule fois dans les préférences
@@ -180,30 +186,17 @@ func CheckProfile(prefs []Alternative, alts []Alternative) error {
 				cpt++
 			}
 			if cpt > 1 {
-				return errors.New(fmt.Sprintf("alternative %d appears more than once", alt1))
+				return fmt.Errorf("alternative %d appears more than once", alt1)
 			}
 		}
 		if cpt == 0 {
-			return errors.New(fmt.Sprintf("alternative %d does not appear", alt1))
+			return fmt.Errorf("alternative %d does not appear", alt1)
 		}
 
 	}
 	return nil
 }
 
-// Vérifie que chaque alternative n'apparaît qu'une seule fois par préférence
-func checkAlternative(pref []Alternative) error {
-	check := make(map[Alternative]int) // nombre d'occurence des alternatives dans la préférence
-	for _, v := range pref {
-		_, present := check[v]
-		if present {
-			return errors.New("alternative appears more than once")
-		} else {
-			check[v] = 1
-		}
-	}
-	return nil
-}
 
 // vérifie le profil donné, par ex. qu'ils sont tous complets et que chaque alternative de alts apparaît exactement une fois par préférences
 func CheckProfileAlternative(prefs Profile, alts []Alternative) error {
