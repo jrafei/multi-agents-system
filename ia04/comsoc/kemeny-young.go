@@ -3,26 +3,23 @@ package comsoc
 import "errors"
 
 /*
-Kemeny : Calculer la relation de préférence la plus proche du profil
-(pour la somme pour chaque votant du nombre de paires de candidats qui
-ne sont pas dans le même ordre). Le meilleur candidat est celui qui est
-rangé premier pour cette relation.
+ Reference du méthode : https://en.wikipedia.org/wiki/Kemeny%E2%80%93Young_method
 */
 
-func Kemeny(p Profile, orderedRankings [][]Alternative) (Alternative, error) {
+func Kemeny(p Profile, orderedAlts []Alternative) ([]Alternative, error) {
 
 	if len(p) == 0 {
-		return -1, errors.New("profil is empty")
+		return nil, errors.New("profil is empty")
 	}
 
 	err := CheckProfileAlternative(p, p[0])
 	if err != nil {
-		return -1, err
+		return nil, err
 	}
 
 	battle := CountIsPref(p) // de type map[AltTuple] int -> le nombre de fois où 'a' bat 'b'
 
-	//calcule toutes les possibilités de  -> permutation d'une préférence
+	//calcule toutes les possibilités de ranking  -> permutation d'une préférence
 	rankings := [][]Alternative{}
 	permute(p[0], 0, &rankings)
 
@@ -33,7 +30,7 @@ func Kemeny(p Profile, orderedRankings [][]Alternative) (Alternative, error) {
 		r := rankings[i]
 		s := calculateScore(r, battle)
 		if s > bestScore {
-			bestRank := make([][]Alternative, 0)
+			bestRank = make([][]Alternative, 0)
 			bestRank = append(bestRank, r)
 			bestScore = s
 		}
@@ -42,18 +39,22 @@ func Kemeny(p Profile, orderedRankings [][]Alternative) (Alternative, error) {
 		}
 	}
 
-	var best []Alternative
+	var bestWinners []Alternative
+
 	if len(bestRank) > 1 {
 		// application de tiebreak
-		best = tiebreak_kemeny(bestRank, orderedRankings)
-	} else {
-		best = bestRank[0]
+		for _, r := range bestRank {
+			bestWinners = append(bestWinners, r[0])
+		}
+		return []Alternative{meilleurElement(bestWinners, orderedAlts)}, nil
 	}
-	return best[0], nil
+
+	//return []Alternative{bestRank[0][0]}, nil
+	return bestRank[0], nil
 }
 
 /*
-	Retourne le score du rang
+	Retourne le score du classement
 */
 func calculateScore(ranking []Alternative, battle map[AltTuple]int) int {
 	res := 0
@@ -64,33 +65,4 @@ func calculateScore(ranking []Alternative, battle map[AltTuple]int) int {
 	}
 	return res
 
-}
-
-func tiebreak_kemeny(winners [][]Alternative, orderedList [][]Alternative) []Alternative {
-	if len(orderedList) == 0 {
-		// on prend le premier
-		return winners[0]
-	}
-
-	best := winners[0]
-
-	for _, r := range winners {
-		if rank_list(r, orderedList) < rank_list(best, orderedList) {
-			best = r
-		}
-	}
-
-	return best
-}
-
-func rank_list(ranking []Alternative, ordereList [][]Alternative) int {
-	i := 0
-	for index, val := range ordereList {
-		if equal_prefs(val, ranking) {
-			i = index
-			break
-		}
-	}
-
-	return i
 }

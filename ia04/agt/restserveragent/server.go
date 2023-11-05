@@ -143,7 +143,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 
 	// Vérification de la méthode de vote
 	switch req.Rule {
-	case "majority", "borda", "approval", "stv", "copeland", "condorcet", "kramer-simpson", "young-condorcet", "dodgson":
+	case "majority", "borda", "approval", "stv", "copeland", "condorcet", "kramer-simpson", "young-condorcet", "dodgson", "kemeny-young":
 		break
 	default:
 		w.WriteHeader(http.StatusNotImplemented)

@@ -26,7 +26,7 @@ func main() {
 	ballot_agent := agent.NewAgent("ballot_agt1", "ballot_agt", nil, nil)
 
 	deadline := time.Now().Add(time.Second * 10).Format(time.RFC3339)
-	Rule := "dodgson"
+	Rule := "majority"
 	Voters := []string{"ag_id01", "ag_id02", "ag_id03", "ballot_agt1"}
 	Nb_alts := 5
 	Tiebreak := []int{4, 2, 3, 5, 1}

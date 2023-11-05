@@ -126,7 +126,7 @@ func (rba *RestBallotAgent) vote(vote utils.RequestVoteBallot) (resp utils.Reque
 		resp.Msg = " Les préférences ne sont pas conformes."
 		return
 	}
-	
+
 	// Ajout des options
 	if vote.Options != nil && len(vote.Options) > 0 && (vote.Options[0] <= rba.nb_alts && vote.Options[0] >= 1) { // On part du principe que la première valeur est un seuil de vote (cf.Approval)
 		rba.options = append(rba.options, vote.Options)
@@ -187,11 +187,15 @@ func (rsa *RestBallotAgent) result() (resp utils.RequestVoteBallot) {
 	case "condorcet":
 		ranking, err = comsoc.CondorcetWinner(rsa.profile)
 	case "young-condorcet":
-		ranking, err = comsoc.YoungCondorcet(rsa.profile,rsa.tiebreak)
+		ranking, err = comsoc.YoungCondorcet(rsa.profile, rsa.tiebreak)
 	case "kramer-simpson":
 		ranking, err = comsoc.SWFFactory(comsoc.KramerSimpson_SWF, comsoc.TieBreakFactory(rsa.tiebreak))(rsa.profile)
 	case "dodgson":
-		ranking, err = comsoc.Dodgson(rsa.profile,rsa.tiebreak)
+		ranking, err = comsoc.Dodgson(rsa.profile, rsa.tiebreak)
+
+	case "kemeny-young":
+		ranking, err = comsoc.Kemeny(rsa.profile, rsa.tiebreak)
+
 	default:
 		resp.StatusCode = http.StatusNotImplemented
 		resp.Msg = "Méthode de vote non implémentée."
