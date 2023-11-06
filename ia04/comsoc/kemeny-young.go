@@ -1,7 +1,7 @@
 package comsoc
 
 import "errors"
-
+	
 /*
  Reference du méthode : https://en.wikipedia.org/wiki/Kemeny%E2%80%93Young_method
 */
@@ -33,7 +33,8 @@ func Kemeny(p Profile, orderedAlts []Alternative) ([]Alternative, error) {
 
 	battle := CountIsPref(p) // de type map[AltTuple] int -> le nombre de fois où 'a' bat 'b'
 
-	//calcule toutes les possibilités de ranking  -> permutation d'une préférence
+	
+	//calcule toutes les possibilités de classement  -> permutation d'une préférence
 	rankings := [][]Alternative{}
 	Permute(p[0], 0, &rankings)
 
