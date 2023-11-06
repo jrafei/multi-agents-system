@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	utils "ia04/agt/utils"
+	request "ia04/agt/request"
 	comsoc "ia04/comsoc"
 )
 
@@ -17,7 +17,7 @@ type RestBallotAgent struct {
 	voter_ids   map[string]bool // Le booléen permet de savoir si l'agent a déjà voté
 	nb_alts     int
 	tiebreak    []comsoc.Alternative
-	server_chan chan utils.RequestVoteBallot // canal de communication entre le scrutin et le serveur (requetes de type vote ou result)
+	server_chan chan request.RequestVoteBallot // canal de communication entre le scrutin et le serveur (requetes de type vote ou result)
 	profile     comsoc.Profile
 	options     [][]int
 }
@@ -40,7 +40,7 @@ type RestBallotAgent struct {
 
 ======================================
 */
-func NewRestBallotAgent(id string, rule string, deadline string, voters_list []string, nb_alts int, tieb []comsoc.Alternative, server_chan chan utils.RequestVoteBallot) *RestBallotAgent {
+func NewRestBallotAgent(id string, rule string, deadline string, voters_list []string, nb_alts int, tieb []comsoc.Alternative, server_chan chan request.RequestVoteBallot) *RestBallotAgent {
 	voters := make(map[string]bool, 0)
 	for _, id := range voters_list {
 		// On signale qu'aucun voteur n'a encore voté
@@ -59,7 +59,7 @@ func NewRestBallotAgent(id string, rule string, deadline string, voters_list []s
 */
 func (rsa *RestBallotAgent) Start() {
 	for {
-		var resp utils.RequestVoteBallot
+		var resp request.RequestVoteBallot
 		req := <-rsa.server_chan
 		// Selection de l'action à effectuer
 		switch req.Action {
@@ -88,7 +88,7 @@ func (rsa *RestBallotAgent) Start() {
 
 ======================================
 */
-func (rba *RestBallotAgent) vote(vote utils.RequestVoteBallot) (resp utils.RequestVoteBallot) {
+func (rba *RestBallotAgent) vote(vote request.RequestVoteBallot) (resp request.RequestVoteBallot) {
 	rba.Lock()
 	defer rba.Unlock()
 	// Vérification de la deadline
@@ -157,7 +157,7 @@ func (rba *RestBallotAgent) vote(vote utils.RequestVoteBallot) (resp utils.Reque
 
 ======================================
 */
-func (rsa *RestBallotAgent) result() (resp utils.RequestVoteBallot) {
+func (rsa *RestBallotAgent) result() (resp request.RequestVoteBallot) {
 	rsa.Lock()
 	defer rsa.Unlock()
 	// Vérification de la deadline

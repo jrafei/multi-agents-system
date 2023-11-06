@@ -4,6 +4,20 @@ import (
 	"errors"
 )
 
+/*
+======================================
+
+	  @brief :
+	  'Fonction de calcul du classement (SWF) de la méthode de vote par Approbation.'
+	  @params :
+		- 'p' : profile sur lequel appliquer la méthode
+		- 'thresholds' : tableau des seuils de vote des élécteurs
+	  @returned :
+	    -  'count' : le décompte des points 
+		- 'err' : erreur (nil si aucune erreur)
+
+======================================
+*/
 func ApprovalSWF(p Profile, thresholds []int) (count Count, err error) {
 	if len(p) == 0 {
 		return nil, errors.New("profil is empty")
@@ -39,7 +53,22 @@ func ApprovalSWF(p Profile, thresholds []int) (count Count, err error) {
 	}
 	return count, nil
 }
-func ApprovalSCF(p Profile, thresholds []int) (bestAlts []Alternative, err error) {
+
+/*
+======================================
+
+	  @brief :
+	  'Fonction de calcul du gagant (SCF) de la méthode de vote par Approbation.'
+	  @params :
+		- 'p' : profile sur lequel appliquer la méthode
+		- 'thresholds' : tableau des seuils de vote des élécteurs
+	  @returned :
+	    -  'bestAlt' : le gagnant (vide si erreur)
+		- 'err' : erreur (nil si aucune erreur)
+
+======================================
+*/
+func ApprovalSCF(p Profile, thresholds []int) (bestAlt []Alternative, err error) {
 	var count Count
 	count, err = ApprovalSWF(p, thresholds)
 	if err != nil {

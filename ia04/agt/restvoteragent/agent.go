@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	utils "ia04/agt/utils"
+	request "ia04/agt/request"
 	comsoc "ia04/comsoc"
 )
 
@@ -62,7 +62,7 @@ func NewAgent(id string, name string, preferences []comsoc.Alternative, options 
 
 ======================================
 */
-func (*Agent) decodeResponse(r *http.Response) (rep utils.Response, err error) {
+func (*Agent) decodeResponse(r *http.Response) (rep request.Response, err error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
 	err = json.Unmarshal(buf.Bytes(), &rep)
@@ -86,7 +86,7 @@ func (*Agent) decodeResponse(r *http.Response) (rep utils.Response, err error) {
 */
 func (agt *Agent) Vote(ballotID string, url_server string) (err error) {
 	// creation de requete de vote
-	req := utils.RequestVote{
+	req := request.RequestVote{
 		AgentID:     string(agt.ID),
 		BallotID:    ballotID,
 		Preferences: agt.Prefs,
@@ -137,7 +137,7 @@ func (agt *Agent) GetResult(ballotID string, url_server string) (winner comsoc.A
 	ranking = make([]comsoc.Alternative, 0)
 
 	// creation de requete de resultat
-	req := utils.RequestVote{
+	req := request.RequestVote{
 		BallotID: ballotID,
 	}
 
@@ -199,7 +199,7 @@ func (agt *Agent) GetResult(ballotID string, url_server string) (winner comsoc.A
 */
 func (agt *Agent) CreateBallot(rule string, deadline string, voters []string, nbAlts int, tiebreak []int, url_server string) (ballot_id string, err error) {
 	// créer la requête de création de ballot
-	req := utils.RequestBallot{
+	req := request.RequestBallot{
 		Rule:     rule,
 		Deadline: deadline,
 		Voters:   voters,

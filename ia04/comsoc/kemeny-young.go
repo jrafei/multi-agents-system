@@ -6,6 +6,20 @@ import "errors"
  Reference du méthode : https://en.wikipedia.org/wiki/Kemeny%E2%80%93Young_method
 */
 
+/*
+======================================
+
+	  @brief :
+	  'Fonction de calcul du classement (SWF) de la méthode de vote de Kemeny-Young.'
+	  @params :
+		- 'p' : profile sur lequel appliquer la méthode
+		- 'orderedAlts' : tiebreak pour le départage des alternatives
+	  @returned :
+	    -  'count' : le décompte des points 
+		- 'err' : erreur (nil si aucune erreur)
+
+======================================
+*/
 func Kemeny(p Profile, orderedAlts []Alternative) ([]Alternative, error) {
 
 	if len(p) == 0 {
@@ -21,14 +35,14 @@ func Kemeny(p Profile, orderedAlts []Alternative) ([]Alternative, error) {
 
 	//calcule toutes les possibilités de ranking  -> permutation d'une préférence
 	rankings := [][]Alternative{}
-	permute(p[0], 0, &rankings)
+	Permute(p[0], 0, &rankings)
 
 	bestRank := [][]Alternative{rankings[0]}
-	bestScore := calculateScore(bestRank[0], battle)
+	bestScore := CalculateScoreKemenyYoung(bestRank[0], battle)
 
 	for i := 1; i < len(rankings); i++ {
 		r := rankings[i]
-		s := calculateScore(r, battle)
+		s := CalculateScoreKemenyYoung(r, battle)
 		if s > bestScore {
 			bestRank = make([][]Alternative, 0)
 			bestRank = append(bestRank, r)
@@ -46,23 +60,9 @@ func Kemeny(p Profile, orderedAlts []Alternative) ([]Alternative, error) {
 		for _, r := range bestRank {
 			bestWinners = append(bestWinners, r[0])
 		}
-		return []Alternative{meilleurElement(bestWinners, orderedAlts)}, nil
+		return []Alternative{MeilleurElement(bestWinners, orderedAlts)}, nil
 	}
 
 	//return []Alternative{bestRank[0][0]}, nil
 	return bestRank[0], nil
-}
-
-/*
-	Retourne le score du classement
-*/
-func calculateScore(ranking []Alternative, battle map[AltTuple]int) int {
-	res := 0
-	for x, _ := range ranking {
-		for y := x + 1; y < len(ranking); y++ {
-			res += battle[AltTuple{Alternative(ranking[x]), Alternative(ranking[y])}]
-		}
-	}
-	return res
-
 }

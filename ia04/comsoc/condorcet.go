@@ -4,6 +4,19 @@ import (
 	"errors"
 )
 
+/*
+======================================
+
+	  @brief :
+	  'Calcul du gagnant de Condorcet'
+	  @params :
+		- 'p' : profile sur lequel appliquer la méthode
+	  @returned :
+	    -  'bestAlts' : gagnant de la méthode (vide si aucun gagnant, de taille 1 sinon)
+		- 'err' : erreur (nil si aucune erreur)
+
+======================================
+*/
 func CondorcetWinner(p Profile) (bestAlts []Alternative, err error) {
  
 	if len(p) == 0 {

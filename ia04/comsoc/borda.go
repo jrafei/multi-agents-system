@@ -2,8 +2,19 @@ package comsoc
 
 import "errors"
 
-//Calcule le score de chaque alternative par la méthode de borda
+/*
+======================================
 
+	  @brief :
+	  'Fonction de calcul du classement (SWF) de la méthode de vote de Borda.'
+	  @params :
+		- 'p' : profile sur lequel appliquer la méthode
+	  @returned :
+	    -  'count' : le décompte des points
+		- 'err' : erreur (nil si aucune erreur)
+
+======================================
+*/
 func BordaSWF(p Profile) (count Count, err error) {
 	if len(p) == 0 {
 		return nil, errors.New("profil is empty")
@@ -27,7 +38,20 @@ func BordaSWF(p Profile) (count Count, err error) {
 }
 
 //renvoie les alternatives qui ont un score Borda maximal
-func BordaSCF(p Profile) (bestAlts []Alternative, err error) {
+/*
+======================================
+
+	  @brief :
+	  'Fonction de calcul du gagnant (SCF) de la méthode de vote de Borda.'
+	  @params :
+		- 'p' : profile sur lequel appliquer la méthode
+	  @returned :
+	    -  'bestAlt' : le gagnant (vide si erreur)
+		- 'err' : erreur (nil si aucune erreur)
+
+======================================
+*/
+func BordaSCF(p Profile) (bestAlt []Alternative, err error) {
 	var count Count
 	count, err = BordaSWF(p)
 	if err != nil {

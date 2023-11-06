@@ -4,6 +4,19 @@ import (
 	"errors"
 )
 
+/*
+======================================
+
+	  @brief :
+	  'Fonction de calcul du classement (SWF) de la méthode de vote Copeland.'
+	  @params :
+		- 'p' : profile sur lequel appliquer la méthode
+	  @returned :
+	    -  'count' : le décompte des points
+		- 'err' : erreur (nil si aucune erreur)
+
+======================================
+*/
 func CopelandSWF(p Profile) (count Count, err error) {
 	if len(p) == 0 {
 		return nil, errors.New("profil is empty")
@@ -76,7 +89,20 @@ func CopelandSWF(p Profile) (count Count, err error) {
 	return count, nil
 }
 
-func CopelandSCF(p Profile) (bestAlts []Alternative, err error) {
+/*
+======================================
+
+	  @brief :
+	  'Fonction de calcul du gagnant(SCF) de la méthode de vote de Copeland.'
+	  @params :
+		- 'p' : profile sur lequel appliquer la méthode
+	  @returned :
+	    -  'bestAlt' : le gagnant (vide si erreur)
+		- 'err' : erreur (nil si aucune erreur)
+
+======================================
+*/
+func CopelandSCF(p Profile) (bestAlt []Alternative, err error) {
 	var count Count
 	count, err = CopelandSWF(p)
 	if err != nil {

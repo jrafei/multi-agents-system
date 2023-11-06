@@ -1,8 +1,20 @@
 package comsoc
 
+/*
+======================================
 
+	  @brief :
+	  'Fabrique de SWF'
+	  @params :
+		- 'swf' : méthode de vote SWF
+		- 'tieb' : tiebreak pour le départage des alternatives
+	  @returned :
+	    -  fonction prenant en paramètre un profil, et retournant le classement des alternatives selon la méthode de vote et une erreur si nécessaire
+
+======================================
+*/
 func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Alternative, error)) func(Profile) ([]Alternative, error) {
-	/* Idée : 
+	/* Mécanisme :
 	* On récupère le maxCount
 	* On tri en fonction de orderedAlts
 	* On ajoute les alts triées dans un nouveau tableau
@@ -29,11 +41,11 @@ func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Al
 					return nil, err
 				}
 				index := rank(alt, alts)
-				alts = Remove(alts, index)
+				alts = RemoveAlt(alts, index)
 				sorted_alts = append(sorted_alts, alt)
 
 				// suppression des alts étudiées de count
-				delete(count,alt)
+				delete(count, alt)
 			}
 		}
 		return sorted_alts, nil
@@ -41,6 +53,19 @@ func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Al
 	return f_swf
 }
 
+/*
+======================================
+
+	  @brief :
+	  'Fabrique de SCF'
+	  @params :
+		- 'swf' : méthode de vote SCF
+		- 'tieb' : tiebreak pour le départage des alternatives
+	  @returned :
+	    -  fonction prenant en paramètre un profil, et retournant la meilleure alternative selon la méthode de vote et une erreur si nécessaire
+
+======================================
+*/
 func SCFFactory(scf func(p Profile) ([]Alternative, error), tieb func([]Alternative) (Alternative, error)) func(Profile) (Alternative, error) {
 	f_scf := func(p Profile) (Alternative, error) {
 		// Construction de la fonction avec application tiebreak
@@ -59,11 +84,21 @@ func SCFFactory(scf func(p Profile) ([]Alternative, error), tieb func([]Alternat
 	return f_scf
 }
 
+/*
+======================================
 
+	  @brief :
+	  'Fabrique de SWF avec options'
+	  @params :
+		- 'swf' : méthode de vote SWF nécessitant des options en paramètre
+		- 'tieb' : tiebreak pour le départage des alternatives
+	  @returned :
+	    -  fonction prenant en paramètre un profil et le type des options, et retournant le classement des alternatives selon la méthode de vote et une erreur si nécessaire
 
-// Même fonctionnement mais lorsque swf a besoin d'un paramètre en plus (ex : STV, approval)
-func SWFFactoryOptions[T any](swf func(p Profile,options []T) (Count, error), tieb func([]Alternative) (Alternative, error)) func(Profile,[]T) ([]Alternative, error) {
-	/* Idée : 
+======================================
+*/
+func SWFFactoryOptions[T any](swf func(p Profile, options []T) (Count, error), tieb func([]Alternative) (Alternative, error)) func(Profile, []T) ([]Alternative, error) {
+	/* Mécanisme :
 	* On récupère le maxCount
 	* On tri en fonction de orderedAlts
 	* On ajoute les alts triées dans un nouveau tableau
@@ -71,9 +106,9 @@ func SWFFactoryOptions[T any](swf func(p Profile,options []T) (Count, error), ti
 	* On recommence sur le tableau restant
 	* à la fin on obtient un tableau des alternatives triées par l'ordre donné, en cas d'égalite.
 	 */
-	f_swf := func(p Profile,options []T) ([]Alternative, error) {
+	f_swf := func(p Profile, options []T) ([]Alternative, error) {
 		// Construction de la fonction avec application tiebreak
-		count, err := swf(p,options)
+		count, err := swf(p, options)
 		// Récupération du décompte
 		if err != nil {
 			return nil, err
@@ -90,11 +125,11 @@ func SWFFactoryOptions[T any](swf func(p Profile,options []T) (Count, error), ti
 					return nil, err
 				}
 				index := rank(alt, alts)
-				alts = Remove(alts, index)
+				alts = RemoveAlt(alts, index)
 				sorted_alts = append(sorted_alts, alt)
 
 				// suppression des alts étudiées de count
-				delete(count,alt)
+				delete(count, alt)
 			}
 		}
 		return sorted_alts, nil
@@ -102,10 +137,23 @@ func SWFFactoryOptions[T any](swf func(p Profile,options []T) (Count, error), ti
 	return f_swf
 }
 
-func SCFFactoryOptions[T any](scf func(p Profile,options []T) ([]Alternative, error), tieb func([]Alternative) (Alternative, error)) func(Profile,[]T) (Alternative, error) {
-	f_scf := func(p Profile,options []T) (Alternative, error) {
+/*
+======================================
+
+	  @brief :
+	  'Fabrique de SCF avec options'
+	  @params :
+		- 'swf' : méthode de vote SCF nécessitant des options en paramètre
+		- 'tieb' : tiebreak pour le départage des alternatives
+	  @returned :
+	    -  fonction prenant en paramètre un profil et le type des options, et retournant la meilleure alternative selon la méthode de vote et une erreur si nécessaire
+
+======================================
+*/
+func SCFFactoryOptions[T any](scf func(p Profile, options []T) ([]Alternative, error), tieb func([]Alternative) (Alternative, error)) func(Profile, []T) (Alternative, error) {
+	f_scf := func(p Profile, options []T) (Alternative, error) {
 		// Construction de la fonction avec application tiebreak
-		alts, err := scf(p,options)
+		alts, err := scf(p, options)
 		// Récupération du décompte
 		if err != nil {
 			return 0, err
