@@ -93,7 +93,7 @@ func (rba *RestBallotAgent) vote(vote request.RequestVoteBallot) (resp request.R
 	defer rba.Unlock()
 	// Vérification de la deadline
 	if rba.deadline <= time.Now().Format(time.RFC3339) {
-		resp.StatusCode = http.StatusGatewayTimeout
+		resp.StatusCode = http.StatusServiceUnavailable
 		resp.Msg = "La deadline est dépassée."
 		return
 	}

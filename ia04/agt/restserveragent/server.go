@@ -118,7 +118,7 @@ func (*RestServerAgent) decodeRequestVote(r *http.Request) (req request.RequestV
 */
 func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) {
 
-	// On lock le système pour ne pas avoir de conflit 
+	// On lock le système pour ne pas avoir de conflit
 	rsa.Lock()
 	defer rsa.Unlock()
 
@@ -154,19 +154,28 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Vérification des paramètres
-	if req.Nb_alts < 0 {
+	deadline, time_err := time.Parse(time.RFC3339, req.Deadline)
+	time_now, _ := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+
+	if req.Nb_alts <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		resp_finale := request.Response{Info: "Nombre négatif d'alternatives."}
+		resp_finale := request.Response{Info: "Nombre nul ou négatif d'alternatives."}
 		serial, _ := json.Marshal(resp_finale)
 		w.Write([]byte(serial))
 		return
 	} else if len(req.Voters) <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		resp_finale := request.Response{Info: "Nombre négatif de voteurs."}
+		resp_finale := request.Response{Info: "Aucun voteur sur la liste."}
 		serial, _ := json.Marshal(resp_finale)
 		w.Write([]byte(serial))
 		return
-	} else if req.Deadline <= time.Now().Format(time.RFC3339) {
+	} else if time_err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		resp_finale := request.Response{Info: "Le format de la deadline n'est pas reconnu (attendu : RFC3339)."}
+		serial, _ := json.Marshal(resp_finale)
+		w.Write([]byte(serial))
+		return
+	} else if time_now.After(deadline) {
 		w.WriteHeader(http.StatusBadRequest)
 		resp_finale := request.Response{Info: "La deadline est déjà dépassée."}
 		serial, _ := json.Marshal(resp_finale)
@@ -230,7 +239,7 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		// On lock le système pour ne pas avoir de conflit 
+		// On lock le système pour ne pas avoir de conflit
 		rsa.Lock()
 		defer rsa.Unlock()
 
@@ -255,7 +264,7 @@ func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 		// Vérification du BallotID
 		ballot_chan, exists := rsa.ballots[req.BallotID]
 		if !exists {
-			if action == "vote" { 
+			if action == "vote" {
 				w.WriteHeader(http.StatusBadRequest)
 			} else if action == "result" {
 				w.WriteHeader(http.StatusNotFound)
