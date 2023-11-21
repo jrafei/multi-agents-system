@@ -238,71 +238,88 @@ func (rsa *RestServerAgent) init_ballot(w http.ResponseWriter, r *http.Request) 
 */
 func (rsa *RestServerAgent) ballotHandler(action string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			// On lock le système pour ne pas avoir de conflit
+			rsa.Lock()
+			defer rsa.Unlock()
 
-		// On lock le système pour ne pas avoir de conflit
-		rsa.Lock()
-		defer rsa.Unlock()
-
-		// vérification de la méthode de la requête
-		if !rsa.checkMethod("POST", w, r) {
-			return
-		}
-
-		// décodage de la requête
-		req, err := rsa.decodeRequestVote(r)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			resp_finale := request.Response{Info: "Impossible de comprendre la requête : " + err.Error()}
-			serial, _ := json.Marshal(resp_finale)
-			w.Write([]byte(serial))
-			return
-		}
-
-		// traitement de la requête
-		var resp request.RequestVoteBallot
-
-		// Vérification du BallotID
-		ballot_chan, exists := rsa.ballots[req.BallotID]
-		if !exists {
-			if action == "vote" {
-				w.WriteHeader(http.StatusBadRequest)
-			} else if action == "result" {
-				w.WriteHeader(http.StatusNotFound)
-			} else {
-				w.WriteHeader(http.StatusBadRequest)
+			// vérification de la méthode de la requête
+			if !rsa.checkMethod("POST", w, r) {
+				return
 			}
-			resp_finale := request.Response{Info: "Le ballotID n'est pas reconnu."}
-			serial, _ := json.Marshal(resp_finale)
-			w.Write([]byte(serial))
-			return
-		}
 
-		vote_req := request.RequestVoteBallot{RequestVote: &req, Action: action, StatusCode: 0, Msg: ""}
-
-		// Transmission de la requête au ballot correspondant
-		ballot_chan <- vote_req
-		// Attente de la response du ballot
-		resp = <-ballot_chan
-		// Transmission de la réponse du ballot au client
-		switch action {
-		case "vote":
-			w.WriteHeader(resp.StatusCode)
-			resp_finale := request.Response{Info: resp.Msg}
-			serial, _ := json.Marshal(resp_finale)
-			w.Write([]byte(serial))
-		case "result":
-			if resp.StatusCode == http.StatusOK {
-				w.WriteHeader(http.StatusOK)
-				resp_finale := request.Response{Winner: resp.Winner, Ranking: resp.Ranking, Info: resp.Msg}
+			// décodage de la requête
+			req, err := rsa.decodeRequestVote(r)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				resp_finale := request.Response{Info: "Impossible de comprendre la requête : " + err.Error()}
 				serial, _ := json.Marshal(resp_finale)
 				w.Write([]byte(serial))
-			} else {
+				return
+			}
+
+			// traitement de la requête
+			var resp request.RequestVoteBallot
+
+			// Vérification du BallotID
+			ballot_chan, exists := rsa.ballots[req.BallotID]
+			if !exists {
+				if action == "vote" {
+					w.WriteHeader(http.StatusBadRequest)
+				} else if action == "result" {
+					w.WriteHeader(http.StatusNotFound)
+				} else {
+					w.WriteHeader(http.StatusBadRequest)
+				}
+				resp_finale := request.Response{Info: "Le ballotID n'est pas reconnu."}
+				serial, _ := json.Marshal(resp_finale)
+				w.Write([]byte(serial))
+				return
+			}
+
+			vote_req := request.RequestVoteBallot{RequestVote: &req, Action: action, StatusCode: 0, Msg: ""}
+
+			// Transmission de la requête au ballot correspondant
+			ballot_chan <- vote_req
+			// Attente de la response du ballot
+			resp = <-ballot_chan
+			// Transmission de la réponse du ballot au client
+			switch action {
+			case "vote":
 				w.WriteHeader(resp.StatusCode)
 				resp_finale := request.Response{Info: resp.Msg}
 				serial, _ := json.Marshal(resp_finale)
 				w.Write([]byte(serial))
+			case "result":
+				if resp.StatusCode == http.StatusOK {
+					w.WriteHeader(http.StatusOK)
+					resp_finale := request.Response{Winner: resp.Winner, Ranking: resp.Ranking, Info: resp.Msg}
+					serial, _ := json.Marshal(resp_finale)
+					w.Write([]byte(serial))
+				} else {
+					w.WriteHeader(resp.StatusCode)
+					resp_finale := request.Response{Info: resp.Msg}
+					serial, _ := json.Marshal(resp_finale)
+					w.Write([]byte(serial))
+				}
 			}
-
+		case http.MethodGet:
+			// Répondre à une requête GET
+			w.WriteHeader(http.StatusNotImplemented)
+			w.Write([]byte("GET method not implemented"))
+		case http.MethodPut:
+			// Répondre à une requête PUT
+			w.WriteHeader(http.StatusNotImplemented)
+			w.Write([]byte("PUT method not implemented"))
+		case http.MethodDelete:
+			// Répondre à une requête DELETE
+			w.WriteHeader(http.StatusNotImplemented)
+			w.Write([]byte("DELETE method not implemented"))
+		default:
+			// Répondre pour toute autre méthode HTTP non prise en charge
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			w.Write([]byte("Method not allowed"))
 		}
 	}
 }
