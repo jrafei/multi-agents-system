@@ -36,6 +36,5 @@ type Response struct {
 	Ballot_id string `json:"ballot-id,omitempty"`
 	Winner    int    `json:"winner,omitempty"`
 	Ranking   []int  `json:"ranking,omitempty"`
-	Status    int    `json:"status,omitempty"`
 	Info      string `json:"info_serveur,omitempty"`
 }

@@ -66,7 +66,6 @@ func (*Agent) decodeResponse(r *http.Response) (rep request.Response, err error)
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
 	err = json.Unmarshal(buf.Bytes(), &rep)
-	rep.Status = r.StatusCode
 	return
 }
 
@@ -110,8 +109,8 @@ func (agt *Agent) Vote(ballotID string, url_server string) (err error) {
 
 	// décodage de la réponse
 	res, err := agt.decodeResponse(resp)
-	log.Println("[", agt.ID, "] Response to vote request (", ballotID, ") : \n		  		Statut : ", res.Status, "\n 		  		Info : ", res.Info)
-	if res.Status != http.StatusOK {
+	log.Println("[", agt.ID, "] Response to vote request (", ballotID, ") : \n		  		Statut : ", resp.StatusCode, "\n 		  		Info : ", res.Info)
+	if resp.StatusCode != http.StatusOK {
 		return errors.New(res.Info)
 	}
 	return
@@ -162,12 +161,12 @@ func (agt *Agent) GetResult(ballotID string, url_server string) (winner comsoc.A
 		return
 	}
 
-	if res.Status != http.StatusOK {
-		log.Println("[", agt.ID, "] Response to result request (", ballotID, ") : \n		  		Statut : ", res.Status, "\n 		  		Info : ", res.Info)
+	if resp.StatusCode != http.StatusOK {
+		log.Println("[", agt.ID, "] Response to result request (", ballotID, ") : \n		  		Statut : ", resp.StatusCode, "\n 		  		Info : ", res.Info)
 		return winner, ranking, errors.New(res.Info)
 	} else {
 		log.Println("[", agt.ID, "] Response to result request (", ballotID,
-			") : \n		  		Statut : ", res.Status,
+			") : \n		  		Statut : ", resp.StatusCode,
 			"\n 		  		Info : ", res.Info,
 			"\n 		  		Winner : ", res.Winner,
 			"\n 		  		Ranking : ", res.Ranking)
@@ -227,14 +226,14 @@ func (agt *Agent) CreateBallot(rule string, deadline string, voters []string, nb
 	// erreur de décodage
 	if err != nil {
 		return "",err
-	}else if res.Status != http.StatusOK {
-		log.Println("[", agt.ID, "] Response to create ballot request : \n		  		    Statut : ", res.Status, "\n 		  		    Info : ", res.Info)
+	}else if resp.StatusCode != http.StatusOK {
+		log.Println("[", agt.ID, "] Response to create ballot request : \n		  		    Statut : ", resp.StatusCode, "\n 		  		    Info : ", res.Info)
 		return "",errors.New(res.Info)
 	} else {
 		log.Println("[", agt.ID, "] Response to create ballot request :"+
 			"\n		  		Ballot id : ", res.Ballot_id,
 			"\n 		  		Info : ", res.Info,
-			"\n					Statud : ", res.Status)
+			"\n					Statut : ", resp.StatusCode)
 
 		return res.Ballot_id, err
 	}
