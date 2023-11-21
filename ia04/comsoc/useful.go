@@ -23,7 +23,7 @@ package comsoc
 
 ======================================
 */
-func MeilleurElement(elements []Alternative, classement []Alternative) Alternative {
+func meilleurElement(elements []Alternative, classement []Alternative) Alternative {
 	best := elements[0]
 	for _, alt := range elements {
 		if rank(alt, classement) < rank(best, classement) {
@@ -46,7 +46,7 @@ func MeilleurElement(elements []Alternative, classement []Alternative) Alternati
 
 ======================================
 */
-func RemovePref(s [][]Alternative, index int) [][]Alternative {
+func removePref(s [][]Alternative, index int) [][]Alternative {
 	ret := make([][]Alternative, 0)
 	ret = append(ret, s[:index]...)
 	return append(ret, s[index+1:]...)
@@ -65,7 +65,7 @@ func RemovePref(s [][]Alternative, index int) [][]Alternative {
 
 ======================================
 */
-func CombinationsKamongN(n, k int) [][]int {
+func combinationsKamongN(n, k int) [][]int {
 	if k > n {
 		return [][]int{}
 	}
@@ -108,7 +108,7 @@ func CombinationsKamongN(n, k int) [][]int {
 
 ======================================
 */
-func CountIsPref(p Profile) map[AltTuple]int {
+func countIsPref(p Profile) map[AltTuple]int {
 	win := make(map[AltTuple]int) // enregistre le nombre de fois où a bat b
 	for _, pref := range p {
 		for index, alt := range pref {
@@ -178,7 +178,7 @@ func minCount(count Count) (worstAlts []Alternative) {
 
 ======================================
 */
-func RemoveAlt(s []Alternative, index int) []Alternative {
+func removeAlt(s []Alternative, index int) []Alternative {
 	ret := make([]Alternative, 0)
 	ret = append(ret, s[:index]...)
 	return append(ret, s[index+1:]...)
@@ -197,7 +197,7 @@ func RemoveAlt(s []Alternative, index int) []Alternative {
 
 ======================================
 */
-func Equal_prefs(pref1 []Alternative, pref2 []Alternative) bool {
+func equal_prefs(pref1 []Alternative, pref2 []Alternative) bool {
 
 	for k, alt1 := range pref1 {
 		if alt1 != pref2[k] {
@@ -220,7 +220,7 @@ func Equal_prefs(pref1 []Alternative, pref2 []Alternative) bool {
 
 ======================================
 */
-func Swap(numbers []Alternative, i, j int) {
+func swap(numbers []Alternative, i, j int) {
 	if i >= len(numbers) || j >= len(numbers) || i < 0 || j < 0 || i == j {
 		return
 	}
@@ -243,7 +243,7 @@ Fonction récursive pour générer les permutations
 
 ======================================
 */
-func Permute(numbers []Alternative, start int, result *[][]Alternative) {
+func permute(numbers []Alternative, start int, result *[][]Alternative) {
 	if start == len(numbers)-1 {
 		// Fait une copie de la permutation courante pour ne pas modifier le résultat
 		perm := make([]Alternative, len(numbers))
@@ -254,11 +254,11 @@ func Permute(numbers []Alternative, start int, result *[][]Alternative) {
 
 	for i := start; i < len(numbers); i++ {
 		// Échange le début avec l'élément courant
-		Swap(numbers, start, i)
+		swap(numbers, start, i)
 		// Appel récursif pour les éléments restants
-		Permute(numbers, start+1, result)
+		permute(numbers, start+1, result)
 		// Restaure l'ordre initial pour le prochain itération
-		Swap(numbers, start, i)
+		swap(numbers, start, i)
 	}
 }
 
@@ -276,7 +276,7 @@ func Permute(numbers []Alternative, start int, result *[][]Alternative) {
 
 ======================================
 */
-func AbsoluteMajority(p Profile, count Count) bool {
+func absoluteMajority(p Profile, count Count) bool {
 	// Vérification si la majorité absolue est atteinte
 	maj_abs := (len(p) / 2) + 1
 	for _, votes := range count {
@@ -299,7 +299,7 @@ func AbsoluteMajority(p Profile, count Count) bool {
 
 ======================================
 */
-func Inversion(ordered []Alternative) (inverted []Alternative) {
+func inversion(ordered []Alternative) (inverted []Alternative) {
 	length := len(ordered)
 	inverted = make([]Alternative, length)
 	for i := length - 1; i >= 0; i-- {
@@ -321,9 +321,9 @@ func Inversion(ordered []Alternative) (inverted []Alternative) {
 
 ======================================
 */
-func RemoveAltProfile(p Profile, alt Alternative) (new_p Profile) {
+func removeAltProfile(p Profile, alt Alternative) (new_p Profile) {
 	for i, pref := range p {
-		p[i] = RemoveAlt(pref, rank(alt, pref))
+		p[i] = removeAlt(pref, rank(alt, pref))
 	}
 	return p
 }
@@ -341,7 +341,7 @@ func RemoveAltProfile(p Profile, alt Alternative) (new_p Profile) {
 
 ======================================
 */
-func CalculateScoreKemenyYoung(ranking []Alternative, battle map[AltTuple]int) int {
+func calculateScoreKemenyYoung(ranking []Alternative, battle map[AltTuple]int) int {
 	res := 0
 	for x, _ := range ranking {
 		for y := x + 1; y < len(ranking); y++ {
@@ -366,15 +366,15 @@ func CalculateScoreKemenyYoung(ranking []Alternative, battle map[AltTuple]int) i
 
 ======================================
 */
-func Flip_pref(pref []Alternative, n_flips int, pere []Alternative) [][]Alternative {
+func flip_pref(pref []Alternative, n_flips int, pere []Alternative) [][]Alternative {
 
 	if n_flips == 1 {
-		return One_flip(pref, pere)
+		return one_flip(pref, pere)
 	} else {
-		res := One_flip(pref, pere)
+		res := one_flip(pref, pere)
 		pref_possible := make([][]Alternative, 0)
 		for _, y := range res {
-			z := Flip_pref(y, n_flips-1, pref)
+			z := flip_pref(y, n_flips-1, pref)
 			pref_possible = append(pref_possible, z...)
 		}
 		return pref_possible
@@ -395,7 +395,7 @@ func Flip_pref(pref []Alternative, n_flips int, pere []Alternative) [][]Alternat
 
 ======================================
 */
-func One_flip(pref []Alternative, pere []Alternative) [][]Alternative {
+func one_flip(pref []Alternative, pere []Alternative) [][]Alternative {
 
 	list_pref := make([][]Alternative, 0)
 
@@ -405,7 +405,7 @@ func One_flip(pref []Alternative, pere []Alternative) [][]Alternative {
 		copy_pref[i] = pref[i+1]
 		copy_pref[i+1] = pref[i]
 
-		if len(pere) == 0 || !Equal_prefs(pere, copy_pref) {
+		if len(pere) == 0 || !equal_prefs(pere, copy_pref) {
 			list_pref = append(list_pref, copy_pref)
 		}
 

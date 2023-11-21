@@ -13,7 +13,7 @@ import (
 		- 'p' : profile sur lequel appliquer la méthode
 		- 'orderedAlts' : tiebreak pour le départage des alternatives
 	  @returned :
-	    -  'count' : le décompte des points 
+	    -  'count' : le décompte des points
 		- 'err' : erreur (nil si aucune erreur)
 
 ======================================
@@ -42,19 +42,19 @@ func STV_SWF(p Profile, orderedAlts []Alternative) (count Count, err error) {
 		if err != nil {
 			return nil, err
 		}
-		if AbsoluteMajority(p, maj_count) {
+		if absoluteMajority(p, maj_count) {
 			// Si la majorité absolue est atteinte, on peut directement retourner les valeurs
 			count[maxCount(maj_count)[0]]++
 			return count, nil
 		} else {
 
 			worstAlts := minCount(maj_count)                              // Récupération des pires alternatives
-			reversedOrderedAlts := Inversion(orderedAlts)                 // Inversion du tiebreak, pour réutilisation de la factory
+			reversedOrderedAlts := inversion(orderedAlts)                 // Inversion du tiebreak, pour réutilisation de la factory
 			worst, err := TieBreakFactory(reversedOrderedAlts)(worstAlts) // Application du tiebreak
 			if err != nil {
 				return nil, err
 			}
-			p = RemoveAltProfile(p, worst) // On supprime la pire alternative dans le profile
+			p = removeAltProfile(p, worst) // On supprime la pire alternative dans le profile
 
 			// On met à jour count, en recupérant les alternatives utilisées dans le test
 			for alt, _ := range maj_count {

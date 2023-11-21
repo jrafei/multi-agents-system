@@ -1,7 +1,7 @@
 package comsoc
 
 import "errors"
-	
+
 /*
  Reference du méthode : https://en.wikipedia.org/wiki/Kemeny%E2%80%93Young_method
 */
@@ -15,7 +15,7 @@ import "errors"
 		- 'p' : profile sur lequel appliquer la méthode
 		- 'orderedAlts' : tiebreak pour le départage des alternatives
 	  @returned :
-	    -  'count' : le décompte des points 
+	    -  'count' : le décompte des points
 		- 'err' : erreur (nil si aucune erreur)
 
 ======================================
@@ -31,19 +31,18 @@ func Kemeny(p Profile, orderedAlts []Alternative) ([]Alternative, error) {
 		return nil, err
 	}
 
-	battle := CountIsPref(p) // de type map[AltTuple] int -> le nombre de fois où 'a' bat 'b'
+	battle := countIsPref(p) // de type map[AltTuple] int -> le nombre de fois où 'a' bat 'b'
 
-	
 	//calcule toutes les possibilités de classement  -> permutation d'une préférence
 	rankings := [][]Alternative{}
-	Permute(p[0], 0, &rankings)
+	permute(p[0], 0, &rankings)
 
 	bestRank := [][]Alternative{rankings[0]}
-	bestScore := CalculateScoreKemenyYoung(bestRank[0], battle)
+	bestScore := calculateScoreKemenyYoung(bestRank[0], battle)
 
 	for i := 1; i < len(rankings); i++ {
 		r := rankings[i]
-		s := CalculateScoreKemenyYoung(r, battle)
+		s := calculateScoreKemenyYoung(r, battle)
 		if s > bestScore {
 			bestRank = make([][]Alternative, 0)
 			bestRank = append(bestRank, r)
@@ -61,7 +60,7 @@ func Kemeny(p Profile, orderedAlts []Alternative) ([]Alternative, error) {
 		for _, r := range bestRank {
 			bestWinners = append(bestWinners, r[0])
 		}
-		return []Alternative{MeilleurElement(bestWinners, orderedAlts)}, nil
+		return []Alternative{meilleurElement(bestWinners, orderedAlts)}, nil
 	}
 
 	//return []Alternative{bestRank[0][0]}, nil

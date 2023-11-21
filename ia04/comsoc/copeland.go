@@ -26,7 +26,7 @@ func CopelandSWF(p Profile) (count Count, err error) {
 		return nil, err
 	}
 	count = make(Count)
-	count_duels := CountIsPref(p)
+	count_duels := countIsPref(p)
 
 	for len(count_duels) > 0 {
 

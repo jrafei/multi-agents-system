@@ -41,7 +41,7 @@ func SWFFactory(swf func(p Profile) (Count, error), tieb func([]Alternative) (Al
 					return nil, err
 				}
 				index := rank(alt, alts)
-				alts = RemoveAlt(alts, index)
+				alts = removeAlt(alts, index)
 				sorted_alts = append(sorted_alts, alt)
 
 				// suppression des alts étudiées de count
@@ -125,7 +125,7 @@ func SWFFactoryOptions[T any](swf func(p Profile, options []T) (Count, error), t
 					return nil, err
 				}
 				index := rank(alt, alts)
-				alts = RemoveAlt(alts, index)
+				alts = removeAlt(alts, index)
 				sorted_alts = append(sorted_alts, alt)
 
 				// suppression des alts étudiées de count

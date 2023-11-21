@@ -30,7 +30,7 @@ func KramerSimpson_SWF(p Profile) (count Count, err error) {
 	nbAts := len(p[0])
 	i := 1
 	for i <= nbAts {
-		duels := CountIsPref(p)
+		duels := countIsPref(p)
 		min_val_duel := len(p)
 		for tuple, value := range duels {
 			if tuple.first == Alternative(i) && value < min_val_duel {

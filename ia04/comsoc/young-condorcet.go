@@ -37,12 +37,12 @@ func YoungCondorcet(p Profile, orderedAlts []Alternative) (bestAlt []Alternative
 	nb_removed_pref := 0
 
 	for nb_removed_pref <= len(p) {
-		for _, combination := range CombinationsKamongN(len(p), nb_removed_pref) {
+		for _, combination := range combinationsKamongN(len(p), nb_removed_pref) {
 			// Détermine toutes les combinaisons possibles de préférences à supprimer
 			tmp_profile := p
 			for i, pref_index := range combination {
 				// Suppression de la préférence
-				tmp_profile = RemovePref(tmp_profile, pref_index-1-i)
+				tmp_profile = removePref(tmp_profile, pref_index-1-i)
 			}
 			winner, err := CondorcetWinner(tmp_profile)
 			if err != nil {
@@ -62,7 +62,7 @@ func YoungCondorcet(p Profile, orderedAlts []Alternative) (bestAlt []Alternative
 			// Si qu'un seul gagnant pour le même nombre de préférences supprimées, il n'y a pas d'ambuiguité
 			return tmp_bestAlt, nil
 		} else if len(tmp_bestAlt) > 1 {
-			return []Alternative{MeilleurElement(tmp_bestAlt, orderedAlts)}, nil
+			return []Alternative{meilleurElement(tmp_bestAlt, orderedAlts)}, nil
 		} else {
 			// Sinon, on teste en supprimant plus de préférences
 			nb_removed_pref++

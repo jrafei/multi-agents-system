@@ -31,7 +31,7 @@ func Dodgson(p Profile, orderedAlts []Alternative) ([]Alternative, error) {
 			// on copie le Profile pour chaque traitement d'une préference d'un individu
 			copy_p := make([][]Alternative, len(p))
 			copy(copy_p, p)
-			list_new_prefs := Flip_pref(pref, n_flips, nil) //renvoie une liste de préférences possibles après 'n_flips' de 'pref'
+			list_new_prefs := flip_pref(pref, n_flips, nil) //renvoie une liste de préférences possibles après 'n_flips' de 'pref'
 
 			for _, pref_possible := range list_new_prefs {
 				// on échange l'ancienne preference par la nouvelle
@@ -57,9 +57,8 @@ func Dodgson(p Profile, orderedAlts []Alternative) ([]Alternative, error) {
 	}
 
 	if len(liste_gagnant) != 1 { // application de tiebreak
-		return []Alternative{MeilleurElement(liste_gagnant, orderedAlts)}, nil
+		return []Alternative{meilleurElement(liste_gagnant, orderedAlts)}, nil
 	} else {
 		return liste_gagnant, nil
 	}
 }
-
