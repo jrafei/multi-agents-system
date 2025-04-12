@@ -1,1 +1,1 @@
-Le projet se trouve dans le dossier ia04
+Le projet est présent dans le dossier ia04
